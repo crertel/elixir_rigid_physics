@@ -1,0 +1,16 @@
+language: elixir
+elixir:
+  - 1.8.2
+otp_release:
+  - 22.0.1
+before_install:
+before_script:
+  - mix local.hex --force
+  - mix deps.get --only test
+script: mix test
+after_script:
+  - MIX_ENV=docs mix deps.get
+  - MIX_ENV=docs mix inch.report
+after_success:
+  - MIX_ENV=dev mix deps.get
+  - MIX_ENV=dev mix coveralls.travis
