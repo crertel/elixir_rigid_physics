@@ -8,6 +8,7 @@ defmodule ElixirRigidPhysics.MixProject do
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      docs: &docs/0,
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
         coveralls: :test,
@@ -31,8 +32,13 @@ defmodule ElixirRigidPhysics.MixProject do
       {:credo, "~> 1.0.5", only: :dev},
       {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.20.2", only: [:docs, :dev]},
-      {:excoveralls, "~> 0.10", only: :test},
+      {:excoveralls, "~> 0.10.0", only: [:test, :dev] },
       {:inch_ex, "~> 2.0.0", only: :docs}
     ]
+  end
+
+  defp docs do
+    {ref, 0} = System.cmd("git", ["rev-parse", "--verify", "--quiet", "HEAD"])
+    [source_ref: ref, main: "api-reference"]
   end
 end
