@@ -4,15 +4,16 @@ defmodule ElixirRigidPhysics do
   """
 
   @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> ElixirRigidPhysics.hello()
-      :world
-
+  Creates a world to do simulation on, returning a handle to the world.
   """
-  def hello do
+  def create_world() do
     :world
+  end
+
+  @doc """
+  Steps the world simulation.
+  """
+  def step_world(world, opts \\ []) do
+    :stepped_world
   end
 end
