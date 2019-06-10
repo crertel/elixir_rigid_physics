@@ -32,8 +32,9 @@ defmodule ElixirRigidPhysics.MixProject do
       {:credo, "~> 1.0.5", only: :dev},
       {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.20.2", only: [:docs, :dev]},
-      {:excoveralls, "~> 0.10.0", only: [:test, :dev] },
-      {:inch_ex, "~> 2.0.0", only: :docs}
+      {:excoveralls, "~> 0.10.0", only: [:test, :dev]},
+      {:inch_ex, "~> 2.0.0", only: :docs},
+      {:graphmath, "~> 1.0.7"}
     ]
   end
 

@@ -10,7 +10,7 @@ defmodule ElixirRigidPhysics.World do
   @type t :: %__MODULE__{}
 
   defstruct process: nil,
-            current_time: nil,
+            current_time: 0.0,
             timestep: 0,
             bodies: %{}
 end
