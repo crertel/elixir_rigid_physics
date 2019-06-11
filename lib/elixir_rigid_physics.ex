@@ -68,9 +68,11 @@ defmodule ElixirRigidPhysics do
     {:reply, world, s}
   end
 
+  @tick_rate 16
+
   @impl true
   def handle_call({:step_world, opts}, _from, s) do
-    dt = Keyword.get(opts, :dt, 1/60)
+    dt = Keyword.get(opts, :dt, @tick_rate/1000)
     new_world = ElixirRigidPhysics.Dynamics.step(sim(s,:world), dt)
 
     update_subscribers( sim(s,:subscribers), new_world)
@@ -87,7 +89,7 @@ defmodule ElixirRigidPhysics do
 
     update_subscribers(sim(s,:subscribers), new_world)
 
-    {:reply, new_world, sim(s, world: new_world)}
+    {:reply, body_ref, sim(s, world: new_world)}
   end
 
   @impl true
@@ -106,11 +108,23 @@ defmodule ElixirRigidPhysics do
 
   @impl true
   def handle_call(:start_world_simulation, {_from_pid, _}, s) do
-    {:reply, :ok, s}
+    thandle = Process.send_after(self(), :tick_simulation, @tick_rate)
+    {:reply, :ok, sim(s, next_tick: thandle)}
   end
 
+  @impl true
   def handle_call(:stop_world_simulation, {_from_pid, _}, s) do
-    {:reply, :ok, s}
+    thandle = sim(s, :next_tick)
+    Process.cancel_timer(thandle)
+    {:reply, :ok, sim(s, next_tick: nil)}
+  end
+
+  @impl true
+  def handle_info(:tick_simulation, s) do
+    new_world = ElixirRigidPhysics.Dynamics.step(sim(s,:world), @tick_rate / 1000)
+    thandle = Process.send_after(self(), :tick_simulation, @tick_rate)
+    update_subscribers( sim(s,:subscribers), new_world)
+    {:noreply, sim(s, world: new_world, next_tick: thandle)}
   end
 
   def update_subscribers(subscribers, world) do
