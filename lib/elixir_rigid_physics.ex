@@ -3,6 +3,10 @@ defmodule ElixirRigidPhysics do
   Documentation for ElixirRigidPhysics.
   """
 
+  require Record
+
+  Record.defrecord(:sim, world: nil, subscribers: MapSet.new(), next_tick: nil)
+
   use GenServer
   alias ElixirRigidPhysics.World
 
@@ -10,7 +14,7 @@ defmodule ElixirRigidPhysics do
   ## Client
 
   def start_link(%World{} = world) do
-    GenServer.start_link(__MODULE__, {world, MapSet.new()})
+    GenServer.start_link(__MODULE__, sim(world: world))
   end
 
   def start_link(), do: start_link( %World{})
@@ -42,46 +46,77 @@ defmodule ElixirRigidPhysics do
     GenServer.call(pid, :unsubscribe_from_world_updates)
   end
 
+  def start_world_simulation(pid) do
+    GenServer.call(pid, :start_world_simulation)
+  end
+
+  def stop_world_simulation(pid) do
+    GenServer.call(pid, :stop_world_simulation)
+  end
+
   #################################
   ## Server
 
   @impl true
-  def init({%World{} = world, subscribers}) do
-    {:ok, {world,subscribers}}
+  def init(s) do
+    {:ok, s}
   end
 
   @impl true
-  def handle_call(:get_world_state, _from, {%World{} = world, subscribers}) do
-    {:reply, world, {world,subscribers}}
+  def handle_call(:get_world_state, _from, s) do
+    world = sim(s, :world)
+    {:reply, world, s}
   end
 
   @impl true
-  def handle_call({:step_world, opts}, _from, {%World{} = world, subscribers}) do
+  def handle_call({:step_world, opts}, _from, s) do
     dt = Keyword.get(opts, :dt, 1/60)
-    new_world = ElixirRigidPhysics.Dynamics.step(world, dt)
+    new_world = ElixirRigidPhysics.Dynamics.step(sim(s,:world), dt)
 
+    update_subscribers( sim(s,:subscribers), new_world)
+
+    {:reply, new_world, sim(s, world: new_world)}
+  end
+
+  @impl true
+  def handle_call({:add_body_to_world, body}, _from, s) do
+    body_ref = make_ref()
+    world = sim(s,:world)
+    %World{bodies: bodies} = world
+    new_world = %World{world | bodies: Map.put(bodies, body_ref, body)}
+
+    update_subscribers(sim(s,:subscribers), new_world)
+
+    {:reply, new_world, sim(s, world: new_world)}
+  end
+
+  @impl true
+  def handle_call(:subscribe_to_world_updates, {from_pid, _}, s) do
+    subs = sim(s,:subscribers)
+
+    {:reply, :ok, sim(s, subscribers: MapSet.put(subs, from_pid))}
+  end
+
+  @impl true
+  def handle_call(:unsubscribe_from_world_updates, {from_pid,_}, s) do
+    subs = sim(s,:subscribers)
+
+    {:reply, :ok, sim(s, subscribers: MapSet.delete(subs, from_pid))}
+  end
+
+  @impl true
+  def handle_call(:start_world_simulation, {_from_pid, _}, s) do
+    {:reply, :ok, s}
+  end
+
+  def handle_call(:stop_world_simulation, {_from_pid, _}, s) do
+    {:reply, :ok, s}
+  end
+
+  def update_subscribers(subscribers, world) do
     MapSet.to_list(subscribers)
     |> Enum.map( fn(subscriber_pid) ->
-      send(subscriber_pid, {:world_update, new_world})
+      send(subscriber_pid, {:world_update, world})
     end)
-
-    {:reply, new_world, {new_world, subscribers}}
-  end
-
-  @impl true
-  def handle_call({:add_body_to_world, body}, _from, {%World{bodies: bodies} = world, subscribers}) do
-    body_ref = make_ref()
-    new_world = %World{world | bodies: Map.put(bodies, body_ref, body)}
-    {:reply, new_world, {new_world, subscribers}}
-  end
-
-  @impl true
-  def handle_call(:subscribe_to_world_updates, {from_pid, _}, {world, subscribers}) do
-    {:reply, :ok, {world, MapSet.put(subscribers, from_pid)}}
-  end
-
-  @impl true
-  def handle_call(:unsubscribe_from_world_updates, {from_pid,_}, {world, subscribers}) do
-    {:reply, :ok, {world, MapSet.delete(subscribers, from_pid)}}
   end
 end
