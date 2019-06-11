@@ -17,7 +17,7 @@ defmodule ElixirRigidPhysics do
     GenServer.start_link(__MODULE__, sim(world: world))
   end
 
-  def start_link(), do: start_link( %World{})
+  def start_link(), do: start_link(%World{})
 
   def get_world_state(pid) do
     GenServer.call(pid, :get_world_state)
@@ -42,6 +42,7 @@ defmodule ElixirRigidPhysics do
   def subscribe_to_world_updates(pid) do
     GenServer.call(pid, :subscribe_to_world_updates)
   end
+
   def unsubscribe_from_world_updates(pid) do
     GenServer.call(pid, :unsubscribe_from_world_updates)
   end
@@ -72,10 +73,10 @@ defmodule ElixirRigidPhysics do
 
   @impl true
   def handle_call({:step_world, opts}, _from, s) do
-    dt = Keyword.get(opts, :dt, @tick_rate/1000)
-    new_world = ElixirRigidPhysics.Dynamics.step(sim(s,:world), dt)
+    dt = Keyword.get(opts, :dt, @tick_rate / 1000)
+    new_world = ElixirRigidPhysics.Dynamics.step(sim(s, :world), dt)
 
-    update_subscribers( sim(s,:subscribers), new_world)
+    update_subscribers(sim(s, :subscribers), new_world)
 
     {:reply, new_world, sim(s, world: new_world)}
   end
@@ -83,25 +84,25 @@ defmodule ElixirRigidPhysics do
   @impl true
   def handle_call({:add_body_to_world, body}, _from, s) do
     body_ref = make_ref()
-    world = sim(s,:world)
+    world = sim(s, :world)
     %World{bodies: bodies} = world
     new_world = %World{world | bodies: Map.put(bodies, body_ref, body)}
 
-    update_subscribers(sim(s,:subscribers), new_world)
+    update_subscribers(sim(s, :subscribers), new_world)
 
     {:reply, body_ref, sim(s, world: new_world)}
   end
 
   @impl true
   def handle_call(:subscribe_to_world_updates, {from_pid, _}, s) do
-    subs = sim(s,:subscribers)
+    subs = sim(s, :subscribers)
 
     {:reply, :ok, sim(s, subscribers: MapSet.put(subs, from_pid))}
   end
 
   @impl true
-  def handle_call(:unsubscribe_from_world_updates, {from_pid,_}, s) do
-    subs = sim(s,:subscribers)
+  def handle_call(:unsubscribe_from_world_updates, {from_pid, _}, s) do
+    subs = sim(s, :subscribers)
 
     {:reply, :ok, sim(s, subscribers: MapSet.delete(subs, from_pid))}
   end
@@ -121,15 +122,15 @@ defmodule ElixirRigidPhysics do
 
   @impl true
   def handle_info(:tick_simulation, s) do
-    new_world = ElixirRigidPhysics.Dynamics.step(sim(s,:world), @tick_rate / 1000)
+    new_world = ElixirRigidPhysics.Dynamics.step(sim(s, :world), @tick_rate / 1000)
     thandle = Process.send_after(self(), :tick_simulation, @tick_rate)
-    update_subscribers( sim(s,:subscribers), new_world)
+    update_subscribers(sim(s, :subscribers), new_world)
     {:noreply, sim(s, world: new_world, next_tick: thandle)}
   end
 
   def update_subscribers(subscribers, world) do
     MapSet.to_list(subscribers)
-    |> Enum.map( fn(subscriber_pid) ->
+    |> Enum.map(fn subscriber_pid ->
       send(subscriber_pid, {:world_update, world})
     end)
   end
