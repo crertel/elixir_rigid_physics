@@ -1,9 +1,14 @@
 defmodule ElixirRigidPhysics.Bodies.Box do
-  alias Graphmath.Mat44
 
-  def make(l, w, d, {tx, ty, tz} = _pos, {_rx,_ry,_rz,_rw} = rotquat, {_mx, _my, _mz} = moi, mass)
-      when is_number(l) and l > 0 and is_number(w) and w > 0 and is_number(d) and d > 0 do
-    xform = Mat44.make_translate(tx, ty, tz)
+  def make(l, w, d, mass, opts \\ []) do
+    position = Keyword.get(opts, :position, {0,0,0})
+    orientation = Keyword.get(opts, :rotate, {1,0,0,0})
+    linear_dampening = Keyword.get(opts, :linear_dampening, 0)
+    angular_dampening = Keyword.get(opts, :angular_dampening, 0)
+
+    linear_velocity = Keyword.get(opts, :linear_velocity, {0,0,0})
+    angular_velocity = Keyword.get(opts, :angular_velocity, {0,0,0})
+
 
     %{
       type: :box,
@@ -11,15 +16,17 @@ defmodule ElixirRigidPhysics.Bodies.Box do
       width: w,
       depth: d,
 
-      rotation: rotquat,
-      mass: mass,
-      moi: moi,
+      linear_dampening: linear_dampening,
+      angular_dampening: angular_dampening,
+      position: position,
+      orientation: orientation,
 
-      transform: xform
+      linear_velocity: linear_velocity,
+      angular_velocity: angular_velocity,
+
+      mass: mass,
+      accumulated_force: {0,0,0},
+      accumulated_torque: {0,0,0}
     }
   end
-
-  def make(l, w, d)
-      when is_number(l) and l > 0 and is_number(w) and w > 0 and is_number(d) and d > 0,
-      do: make(l, w, d, {0.0, 0.0, 0.0}, {0.0,0.0,0.0,0.0}, {0.0,0.0,0.0}, 1)
 end
