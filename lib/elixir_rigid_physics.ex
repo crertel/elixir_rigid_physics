@@ -32,27 +32,27 @@ defmodule ElixirRigidPhysics do
   """
   @spec step_world(pid(), Keyword.t()) :: :ok
   def step_world(pid, opts \\ []) do
-    GenServer.call(pid, {:step_world, opts})
+    GenServer.cast(pid, {:step_world, opts})
   end
 
   def add_body_to_world(pid, body) do
-    GenServer.call(pid, {:add_body_to_world, body})
+    GenServer.cast(pid, {:add_body_to_world, body})
   end
 
   def subscribe_to_world_updates(pid) do
-    GenServer.call(pid, :subscribe_to_world_updates)
+    GenServer.cast(pid, {:subscribe_to_world_updates, self()})
   end
 
   def unsubscribe_from_world_updates(pid) do
-    GenServer.call(pid, :unsubscribe_from_world_updates)
+    GenServer.cast(pid, {:unsubscribe_from_world_updates, self()})
   end
 
   def start_world_simulation(pid) do
-    GenServer.call(pid, :start_world_simulation)
+    GenServer.cast(pid, :start_world_simulation)
   end
 
   def stop_world_simulation(pid) do
-    GenServer.call(pid, :stop_world_simulation)
+    GenServer.cast(pid, :stop_world_simulation)
   end
 
   #################################
@@ -72,17 +72,17 @@ defmodule ElixirRigidPhysics do
   @tick_rate 16
 
   @impl true
-  def handle_call({:step_world, opts}, _from, s) do
+  def handle_cast({:step_world, opts}, s) do
     dt = Keyword.get(opts, :dt, @tick_rate / 1000)
     new_world = ElixirRigidPhysics.Dynamics.step(sim(s, :world), dt)
 
     update_subscribers(sim(s, :subscribers), new_world)
 
-    {:reply, new_world, sim(s, world: new_world)}
+    {:noreply, sim(s, world: new_world)}
   end
 
   @impl true
-  def handle_call({:add_body_to_world, body}, _from, s) do
+  def handle_cast({:add_body_to_world, body}, s) do
     body_ref = make_ref()
     world = sim(s, :world)
     %World{bodies: bodies} = world
@@ -90,34 +90,34 @@ defmodule ElixirRigidPhysics do
 
     update_subscribers(sim(s, :subscribers), new_world)
 
-    {:reply, body_ref, sim(s, world: new_world)}
+    {:noreply, sim(s, world: new_world)}
   end
 
   @impl true
-  def handle_call(:subscribe_to_world_updates, {from_pid, _}, s) do
+  def handle_cast({:subscribe_to_world_updates, from_pid}, s) do
     subs = sim(s, :subscribers)
 
-    {:reply, :ok, sim(s, subscribers: MapSet.put(subs, from_pid))}
+    {:noreply, sim(s, subscribers: MapSet.put(subs, from_pid))}
   end
 
   @impl true
-  def handle_call(:unsubscribe_from_world_updates, {from_pid, _}, s) do
+  def handle_cast({:unsubscribe_from_world_updates, from_pid}, s) do
     subs = sim(s, :subscribers)
 
-    {:reply, :ok, sim(s, subscribers: MapSet.delete(subs, from_pid))}
+    {:noreply, sim(s, subscribers: MapSet.delete(subs, from_pid))}
   end
 
   @impl true
-  def handle_call(:start_world_simulation, {_from_pid, _}, s) do
+  def handle_cast(:start_world_simulation, s) do
     thandle = Process.send_after(self(), :tick_simulation, @tick_rate)
-    {:reply, :ok, sim(s, next_tick: thandle)}
+    {:noreply, sim(s, next_tick: thandle)}
   end
 
   @impl true
-  def handle_call(:stop_world_simulation, {_from_pid, _}, s) do
+  def handle_cast(:stop_world_simulation, s) do
     thandle = sim(s, :next_tick)
     Process.cancel_timer(thandle)
-    {:reply, :ok, sim(s, next_tick: nil)}
+    {:noreply, sim(s, next_tick: nil)}
   end
 
   @impl true
