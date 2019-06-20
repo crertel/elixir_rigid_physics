@@ -19,7 +19,8 @@ defmodule ElixirRigidPhysics do
 
   def start_link(), do: start_link(%World{})
 
-  def get_world_state(pid) do
+  @spec get_world_state(atom | pid | {atom, any} | {:via, atom, any}) :: any
+  def get_world_state(pid)  when is_pid(pid) do
     GenServer.call(pid, :get_world_state)
   end
 
@@ -31,27 +32,27 @@ defmodule ElixirRigidPhysics do
   * `timestep` is the number of seconds to step the world by.
   """
   @spec step_world(pid(), Keyword.t()) :: :ok
-  def step_world(pid, opts \\ []) do
+  def step_world(pid, opts \\ [])  when is_pid(pid) and is_list(opts) do
     GenServer.cast(pid, {:step_world, opts})
   end
 
-  def add_body_to_world(pid, body) do
+  def add_body_to_world(pid, %{} = body)  when is_pid(pid) do
     GenServer.cast(pid, {:add_body_to_world, body})
   end
 
-  def subscribe_to_world_updates(pid) do
+  def subscribe_to_world_updates(pid)  when is_pid(pid) do
     GenServer.cast(pid, {:subscribe_to_world_updates, self()})
   end
 
-  def unsubscribe_from_world_updates(pid) do
+  def unsubscribe_from_world_updates(pid)  when is_pid(pid) do
     GenServer.cast(pid, {:unsubscribe_from_world_updates, self()})
   end
 
-  def start_world_simulation(pid) do
+  def start_world_simulation(pid)  when is_pid(pid) do
     GenServer.cast(pid, :start_world_simulation)
   end
 
-  def stop_world_simulation(pid) do
+  def stop_world_simulation(pid)  when is_pid(pid) do
     GenServer.cast(pid, :stop_world_simulation)
   end
 
@@ -69,6 +70,7 @@ defmodule ElixirRigidPhysics do
     {:reply, world, s}
   end
 
+  # update at 60 hz
   @tick_rate 16
 
   @impl true
