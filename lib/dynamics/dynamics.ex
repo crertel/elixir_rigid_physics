@@ -1,6 +1,5 @@
 defmodule ElixirRigidPhysics.Dynamics do
   alias ElixirRigidPhysics.World
-  alias Graphmath.Mat44
   alias Graphmath.Vec3
   alias Graphmath.Quatern
 
@@ -10,10 +9,10 @@ defmodule ElixirRigidPhysics.Dynamics do
 
       %{
         position: position,
-        orientation: {ow,ox,oy,oz} = orientation,
+        orientation: orientation,
 
         linear_velocity: linear_velocity,
-        angular_velocity: {avx,avy,avz} = angular_velocity,
+        angular_velocity: angular_velocity,
       } = b
 
       # integrate linear velocity
