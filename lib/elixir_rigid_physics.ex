@@ -40,6 +40,14 @@ defmodule ElixirRigidPhysics do
     GenServer.cast(pid, {:add_body_to_world, body})
   end
 
+  def remove_body_from_world(pid, body_ref) when is_pid(pid) and is_reference(body_ref) do
+    GenServer.cast(pid, {:remove_body_from_world, body_ref})
+  end
+
+  def remove_all_bodies_from_world(pid) when is_pid(pid) do
+    GenServer.cast(pid, :remove_all_bodies_from_world)
+  end
+
   def subscribe_to_world_updates(pid)  when is_pid(pid) do
     GenServer.cast(pid, {:subscribe_to_world_updates, self()})
   end
@@ -86,9 +94,28 @@ defmodule ElixirRigidPhysics do
   @impl true
   def handle_cast({:add_body_to_world, body}, s) do
     body_ref = make_ref()
-    world = sim(s, :world)
-    %World{bodies: bodies} = world
+    %World{bodies: bodies} = world = sim(s, :world)
     new_world = %World{world | bodies: Map.put(bodies, body_ref, body)}
+
+    update_subscribers(sim(s, :subscribers), new_world)
+
+    {:noreply, sim(s, world: new_world)}
+  end
+
+  @impl true
+  def handle_cast({:remove_body_from_world, body_ref}, s) do
+    %World{bodies: bodies} = world = sim(s, :world)
+    new_world = %World{world | bodies: Map.delete(bodies, body_ref)}
+
+    update_subscribers(sim(s, :subscribers), new_world)
+
+    {:noreply, sim(s, world: new_world)}
+  end
+
+  @impl true
+  def handle_cast(:remove_all_bodies_from_world, s) do
+    world = sim(s, :world)
+    new_world = %World{world | bodies: %{}}
 
     update_subscribers(sim(s, :subscribers), new_world)
 
