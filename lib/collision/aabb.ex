@@ -7,15 +7,18 @@ defmodule ElixirRigidPhysics.Collision.AABB do
   require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
   require ElixirRigidPhysics.Geometry.Box, as: Box
 
-  def create_world_from_body( Body.body(shape: Sphere.sphere(radius: r) = _sphere, position: {px, py, pz})) do
+  def create_world_from_body(
+        Body.body(shape: Sphere.sphere(radius: r) = _sphere, position: {px, py, pz})
+      ) do
     aabb(
-      min: { px - r, py - r, pz - r },
-      max: { px + r, py + r, pz + r}
+      min: {px - r, py - r, pz - r},
+      max: {px + r, py + r, pz + r}
     )
   end
 
-  def create_world_from_body( Body.body(shape: shape, position: {px, py, pz}, orientation: orientation)) do
-
+  def create_world_from_body(
+        Body.body(shape: shape, position: {px, py, pz}, orientation: orientation)
+      ) do
     # get local-space AABB
     _aabb = create_local_from_shape(shape)
 
@@ -58,25 +61,26 @@ defmodule ElixirRigidPhysics.Collision.AABB do
     {:aabb, {-0.5, -1.0, -0.5}, {0.5, 1.0, 0.5}}
 
   """
-  def create_local_from_shape( Box.box(width: w, height: h, depth: d) ) do
+  def create_local_from_shape(Box.box(width: w, height: h, depth: d)) do
     aabb(
-      min: { -w/2, -h/2, -d/2 },
-      max: { w/2, h/2, d/2}
+      min: {-w / 2, -h / 2, -d / 2},
+      max: {w / 2, h / 2, d / 2}
     )
   end
-  def create_local_from_shape( Sphere.sphere(radius: r)) do
+
+  def create_local_from_shape(Sphere.sphere(radius: r)) do
     aabb(
-      min: { -r, -r, -r },
-      max: { r, r, r}
+      min: {-r, -r, -r},
+      max: {r, r, r}
     )
   end
-  def create_local_from_shape( Capsule.capsule(axial_length: al, cap_radius: cr) ) do
 
-    half_height = cr + (al/2.0)
+  def create_local_from_shape(Capsule.capsule(axial_length: al, cap_radius: cr)) do
+    half_height = cr + al / 2.0
 
     aabb(
-      min: { -cr, -half_height, -cr },
-      max: { cr, half_height, cr}
+      min: {-cr, -half_height, -cr},
+      max: {cr, half_height, cr}
     )
   end
 end
