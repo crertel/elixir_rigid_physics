@@ -169,4 +169,38 @@ defmodule ElixirRigidPhysics.Collision.AABB do
       max: {cr, half_height, cr}
     )
   end
+
+  @doc """
+  Checks if two AABBs are overlapping.
+
+  ## Examples
+    iex> require ElixirRigidPhysics.Collision.AABB, as: AABB
+    iex> a = AABB.aabb( min: {0,0,0}, max: {1,1,1} )
+    iex> b = AABB.aabb( min: {2,2,2}, max: {3,3,3} )
+    iex> AABB.overlaps?(a,b)
+    false
+
+    iex> require ElixirRigidPhysics.Collision.AABB, as: AABB
+    iex> a = AABB.aabb( min: {0,0,0}, max: {1,1,1} )
+    iex> b = AABB.aabb( min: {0,0,2}, max: {1,1,3} )
+    iex> AABB.overlaps?(a,b)
+    false
+
+    iex> require ElixirRigidPhysics.Collision.AABB, as: AABB
+    iex> a = AABB.aabb( min: {0,0,0}, max: {1,1,1} )
+    iex> b = AABB.aabb( min: {0,0,0}, max: {1,1,1} )
+    iex> AABB.overlaps?(a,b)
+    true
+
+    iex> require ElixirRigidPhysics.Collision.AABB, as: AABB
+    iex> a = AABB.aabb( min: {0,0,0}, max: {1,1,1} )
+    iex> b = AABB.aabb( min: {0.5,0.5,0.5}, max: {1.5,1.5,1.5} )
+    iex> AABB.overlaps?(a,b)
+    true
+  """
+  def overlaps?( aabb(min: {aminx, aminy, aminz}, max: {amaxx,amaxy,amaxz}), aabb(min: {bminx, bminy, bminz}, max: {bmaxx, bmaxy, bmaxz})) do
+    (( bminx <= amaxx and amaxx <= bmaxx ) or ( aminx <= bmaxx and bmaxx <= aminx))
+    and (( bminy <= amaxy and amaxy <= bmaxy ) or ( aminy <= bmaxy and bmaxy <= aminy))
+    and (( bminz <= amaxz and amaxz <= bmaxz ) or ( aminz <= bmaxz and bmaxz <= aminz))
+  end
 end
