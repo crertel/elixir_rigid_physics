@@ -19,7 +19,7 @@ defmodule ElixirRigidPhysics.Dynamics.Body do
   def create(shape, opts \\ []) do
     mass = Keyword.get(opts, :mass, 0)
     position = Keyword.get(opts, :position, {0, 0, 0})
-    orientation = Keyword.get(opts, :rotate, Quatern.identity())
+    orientation = Keyword.get(opts, :orientation, Quatern.identity())
     linear_dampening = Keyword.get(opts, :linear_dampening, 0)
     angular_dampening = Keyword.get(opts, :angular_dampening, 0)
 

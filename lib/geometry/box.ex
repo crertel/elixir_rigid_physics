@@ -1,6 +1,29 @@
 defmodule ElixirRigidPhysics.Geometry.Box do
-  require Record
-  Record.defrecord(:box, length: 0.0, width: 0.0, depth: 0.0)
+  @moduledoc """
+  Box geometry module.
 
-  def create(l, w, d), do: box(length: l, width: w, depth: d)
+  Boxes are solid rectangular prisms, with three dimensions:
+
+  * `width` -- length on the x-axis
+  * `height` -- length on the y-axis (up)
+  * `depth` -- length on the z-axis
+
+  Their center is assumed to be at the origin, but in the absence of a frame that doesn't matter.
+  """
+  require Record
+  Record.defrecord(:box, width: 0.0, height: 0.0, depth: 0.0)
+
+  @doc """
+  Creates a box geometry.
+
+  Width is the length on the x-axis, height is the length on the y-axis, and depth is the length on the z-axis.
+
+  ## Examples
+
+    iex> require ElixirRigidPhysics.Geometry.Box, as: Box
+    ElixirRigidPhysics.Geometry.Box
+    iex> Box.create(1.0,2.0,3.0)
+    {:box, 1.0, 2.0, 3.0}
+  """
+  def create(w, h, d), do: box(width: w, height: h, depth: d)
 end

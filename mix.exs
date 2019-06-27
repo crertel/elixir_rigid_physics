@@ -34,7 +34,7 @@ defmodule ElixirRigidPhysics.MixProject do
       {:ex_doc, "~> 0.20.2", only: [:docs, :dev]},
       {:excoveralls, "~> 0.10.0", only: [:test, :dev]},
       {:inch_ex, "~> 2.0.0", only: :docs},
-      {:graphmath, "~> 2.0.0"}
+      {:graphmath, "~> 2.1.0"}
     ]
   end
 
