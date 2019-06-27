@@ -10,19 +10,21 @@ defmodule ElixirRigidPhysics do
   use GenServer
   alias ElixirRigidPhysics.World
 
-  import ElixirRigidPhysics.Dynamics.Body
-
   #######################
   ## Client
 
-  def start_link(%World{} = world) do
-    GenServer.start_link(__MODULE__, sim(world: world))
+
+  def start_link(opts \\ []) do
+    procname = Keyword.get(opts, :name, "")
+    if  procname !== "" do
+      GenServer.start_link(__MODULE__, sim(world: %World{}), [name: procname])
+    else
+      GenServer.start_link(__MODULE__, sim(world: %World{}))
+    end
   end
 
-  def start_link(), do: start_link(%World{})
-
-  @spec get_world_state(atom | pid | {atom, any} | {:via, atom, any}) :: any
-  def get_world_state(pid) when is_pid(pid) do
+  #@spec get_world_state(atom | pid | {atom, any} | {:via, atom, any}) :: any
+  def get_world_state(pid) do
     GenServer.call(pid, :get_world_state)
   end
 
@@ -33,36 +35,36 @@ defmodule ElixirRigidPhysics do
 
   * `timestep` is the number of seconds to step the world by.
   """
-  @spec step_world(pid(), Keyword.t()) :: :ok
-  def step_world(pid, opts \\ []) when is_pid(pid) and is_list(opts) do
+  #@spec step_world(pid(), Keyword.t()) :: :ok
+  def step_world(pid, opts \\ []) when is_list(opts) do
     GenServer.cast(pid, {:step_world, opts})
   end
 
-  def add_body_to_world(pid, body) when is_pid(pid) and Record.is_record(body, :body) do
+  def add_body_to_world(pid, body) when Record.is_record(body, :body) do
     GenServer.cast(pid, {:add_body_to_world, body})
   end
 
-  def remove_body_from_world(pid, body_ref) when is_pid(pid) and is_reference(body_ref) do
+  def remove_body_from_world(pid, body_ref) when is_reference(body_ref) do
     GenServer.cast(pid, {:remove_body_from_world, body_ref})
   end
 
-  def remove_all_bodies_from_world(pid) when is_pid(pid) do
+  def remove_all_bodies_from_world(pid) do
     GenServer.cast(pid, :remove_all_bodies_from_world)
   end
 
-  def subscribe_to_world_updates(pid) when is_pid(pid) do
+  def subscribe_to_world_updates(pid) do
     GenServer.cast(pid, {:subscribe_to_world_updates, self()})
   end
 
-  def unsubscribe_from_world_updates(pid) when is_pid(pid) do
+  def unsubscribe_from_world_updates(pid) do
     GenServer.cast(pid, {:unsubscribe_from_world_updates, self()})
   end
 
-  def start_world_simulation(pid) when is_pid(pid) do
+  def start_world_simulation(pid) do
     GenServer.cast(pid, :start_world_simulation)
   end
 
-  def stop_world_simulation(pid) when is_pid(pid) do
+  def stop_world_simulation(pid) do
     GenServer.cast(pid, :stop_world_simulation)
   end
 
