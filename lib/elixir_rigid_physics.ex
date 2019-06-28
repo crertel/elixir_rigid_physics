@@ -13,17 +13,17 @@ defmodule ElixirRigidPhysics do
   #######################
   ## Client
 
-
   def start_link(opts \\ []) do
     procname = Keyword.get(opts, :name, "")
-    if  procname !== "" do
-      GenServer.start_link(__MODULE__, sim(world: %World{}), [name: procname])
+
+    if procname !== "" do
+      GenServer.start_link(__MODULE__, sim(world: %World{}), name: procname)
     else
       GenServer.start_link(__MODULE__, sim(world: %World{}))
     end
   end
 
-  #@spec get_world_state(atom | pid | {atom, any} | {:via, atom, any}) :: any
+  # @spec get_world_state(atom | pid | {atom, any} | {:via, atom, any}) :: any
   def get_world_state(pid) do
     GenServer.call(pid, :get_world_state)
   end
@@ -35,7 +35,7 @@ defmodule ElixirRigidPhysics do
 
   * `timestep` is the number of seconds to step the world by.
   """
-  #@spec step_world(pid(), Keyword.t()) :: :ok
+  # @spec step_world(pid(), Keyword.t()) :: :ok
   def step_world(pid, opts \\ []) when is_list(opts) do
     GenServer.cast(pid, {:step_world, opts})
   end
@@ -83,7 +83,7 @@ defmodule ElixirRigidPhysics do
   end
 
   # update at 60 hz
-  #@tick_rate 16
+  # @tick_rate 16
 
   # update at 15 hz
   @tick_rate 64
