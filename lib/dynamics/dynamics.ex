@@ -1,10 +1,17 @@
 defmodule ElixirRigidPhysics.Dynamics do
   alias ElixirRigidPhysics.World
+  alias ElixirRigidPhysics.Collision.Broadphase
+
   alias Graphmath.Vec3
   alias Graphmath.Quatern
 
-  def step(%World{timestep: timestep, current_time: current_time, bodies: bodies} = world, dt) do
+
+  def step(%World{timestep: timestep, current_time: current_time, bodies: bodies, broadphase_acceleration_structure: old_acc_struct} = world, dt) do
     import ElixirRigidPhysics.Dynamics.Body
+
+    acc_struct = Broadphase.populate_acceleration_structure_from_bodies(old_acc_struct, bodies)
+
+    IO.inspect( Broadphase.generate_potential_colliding_pairs(acc_struct) )
 
     new_bodies =
       for {r,
@@ -26,6 +33,6 @@ defmodule ElixirRigidPhysics.Dynamics do
         {r, new_body}
       end
 
-    %World{world | timestep: timestep + 1, current_time: current_time + dt, bodies: new_bodies}
+    %World{world | timestep: timestep + 1, current_time: current_time + dt, bodies: new_bodies, broadphase_acceleration_structure: acc_struct}
   end
 end

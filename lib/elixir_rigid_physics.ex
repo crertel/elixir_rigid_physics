@@ -83,7 +83,10 @@ defmodule ElixirRigidPhysics do
   end
 
   # update at 60 hz
-  @tick_rate 16
+  #@tick_rate 16
+
+  # update at 15 hz
+  @tick_rate 64
 
   @impl true
   def handle_cast({:step_world, opts}, s) do
