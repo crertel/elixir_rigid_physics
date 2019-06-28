@@ -19,10 +19,10 @@ alias ElixirRigidPhysics.Collision.AABB
     )
   end
 
-  def geenrate_potential_colliding_pairs( broadphase_acc_struct(
+  def generate_potential_colliding_pairs( broadphase_acc_struct(
   bodies: bodies
 )) do
-  Util.List.find_pairs(bodies, fn( {_ref_a, _body_a, aabb_a}, {_ref_b, _body_b, aabb_b}) ->
+  Util.List.generate_pairs(bodies, fn( {_ref_a, _body_a, aabb_a}, {_ref_b, _body_b, aabb_b}) ->
     AABB.overlaps?(aabb_a, aabb_b)
   end)
 

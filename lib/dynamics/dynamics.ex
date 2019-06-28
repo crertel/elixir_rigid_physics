@@ -11,7 +11,7 @@ defmodule ElixirRigidPhysics.Dynamics do
 
     acc_struct = Broadphase.populate_acceleration_structure_from_bodies(old_acc_struct, bodies)
 
-    IO.inspect( Broadphase.geenrate_potential_colliding_pairs(acc_struct) )
+    IO.inspect( Broadphase.generate_potential_colliding_pairs(acc_struct) )
 
     new_bodies =
       for {r,
