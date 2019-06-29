@@ -83,17 +83,26 @@ defmodule ElixirRigidPhysics.Collision.AABB do
         Body.body(shape: shape, position: {px, py, pz}, orientation: orientation)
       ) do
     # get local-space AABB
-    aabb(min: {minx, miny, minz} = min , max: {maxx, maxy, maxz} = max) = create_local_from_shape(shape)
+    aabb(min: {minx, miny, minz} = min, max: {maxx, maxy, maxz} = max) =
+      create_local_from_shape(shape)
 
     # recreate all corners of AABB, using naming from octants ( https://en.wikipedia.org/wiki/Octant_(solid_geometry) )
-    c1 = max # +x, +y, +z
-    c2 = {minx, maxy, maxz} # -x, +y, +z
-    c3 = {minx, miny, maxz} # -x, -y, +z
-    c4 = {maxx, miny, maxz} # +x, -y, +z
-    c5 = {maxx, maxy, minz} # +x, +y, -z
-    c6 = {minx, maxy, minz} # -x, +y, -z
-    c7 = min # -x, -y, -z
-    c8 = {maxx, miny, minz} # +x, -y, -z
+    # +x, +y, +z
+    c1 = max
+    # -x, +y, +z
+    c2 = {minx, maxy, maxz}
+    # -x, -y, +z
+    c3 = {minx, miny, maxz}
+    # +x, -y, +z
+    c4 = {maxx, miny, maxz}
+    # +x, +y, -z
+    c5 = {maxx, maxy, minz}
+    # -x, +y, -z
+    c6 = {minx, maxy, minz}
+    # -x, -y, -z
+    c7 = min
+    # +x, -y, -z
+    c8 = {maxx, miny, minz}
 
     # rotate to match world frame
     c1p = Quatern.transform_vector(orientation, c1)
@@ -106,13 +115,18 @@ defmodule ElixirRigidPhysics.Collision.AABB do
     c8p = Quatern.transform_vector(orientation, c8)
 
     # calculate new AABB
-    {{minxp, minyp, minzp},{maxxp, maxyp, maxzp}} =[c1p,c2p,c3p,c4p,c5p,c6p,c7p,c8p]
-    |> Enum.reduce({{@near_infinite, @near_infinite, @near_infinite}, {-@near_infinite,-@near_infinite,-@near_infinite}}, fn({x,y,z},{{minx, miny, minz},{maxx,maxy,maxz}}) ->
-      {
-        {min(x, minx), min(y, miny), min(z, minz)},
-        {max(x, maxx), max(y, maxy), max(z, maxz)}
-      }
-    end)
+    {{minxp, minyp, minzp}, {maxxp, maxyp, maxzp}} =
+      [c1p, c2p, c3p, c4p, c5p, c6p, c7p, c8p]
+      |> Enum.reduce(
+        {{@near_infinite, @near_infinite, @near_infinite},
+         {-@near_infinite, -@near_infinite, -@near_infinite}},
+        fn {x, y, z}, {{minx, miny, minz}, {maxx, maxy, maxz}} ->
+          {
+            {min(x, minx), min(y, miny), min(z, minz)},
+            {max(x, maxx), max(y, maxy), max(z, maxz)}
+          }
+        end
+      )
 
     # offset by position
     aabb(
@@ -198,9 +212,12 @@ defmodule ElixirRigidPhysics.Collision.AABB do
     iex> AABB.overlaps?(a,b)
     true
   """
-  def overlaps?( aabb(min: {aminx, aminy, aminz}, max: {amaxx,amaxy,amaxz}), aabb(min: {bminx, bminy, bminz}, max: {bmaxx, bmaxy, bmaxz})) do
-    (( bminx <= amaxx and amaxx <= bmaxx ) or ( aminx <= bmaxx and bmaxx <= aminx))
-    and (( bminy <= amaxy and amaxy <= bmaxy ) or ( aminy <= bmaxy and bmaxy <= aminy))
-    and (( bminz <= amaxz and amaxz <= bmaxz ) or ( aminz <= bmaxz and bmaxz <= aminz))
+  def overlaps?(
+        aabb(min: {aminx, aminy, aminz}, max: {amaxx, amaxy, amaxz}),
+        aabb(min: {bminx, bminy, bminz}, max: {bmaxx, bmaxy, bmaxz})
+      ) do
+    ((bminx <= amaxx and amaxx <= bmaxx) or (aminx <= bmaxx and bmaxx <= aminx)) and
+      ((bminy <= amaxy and amaxy <= bmaxy) or (aminy <= bmaxy and bmaxy <= aminy)) and
+      ((bminz <= amaxz and amaxz <= bmaxz) or (aminz <= bmaxz and bmaxz <= aminz))
   end
 end

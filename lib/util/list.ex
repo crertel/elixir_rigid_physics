@@ -1,5 +1,4 @@
 defmodule ElixirRigidPhysics.Util.List do
-
   @doc """
   Function to find every pair of elements in a list.
 
@@ -21,15 +20,15 @@ defmodule ElixirRigidPhysics.Util.List do
     iex> List.generate_pairs([1,2,3])
     [{1,2}, {1,3}, {2,3}]
   """
-  @spec generate_pairs( [any()] ) :: [ {any(), any()} ]
+  @spec generate_pairs([any()]) :: [{any(), any()}]
   def generate_pairs([]), do: []
   def generate_pairs([_]), do: []
-  def generate_pairs([a,b]), do: [{a,b}]
+  def generate_pairs([a, b]), do: [{a, b}]
+
   def generate_pairs([a | rest]) do
-    main_pairs = for i <- rest, do: {a,i}
+    main_pairs = for i <- rest, do: {a, i}
     main_pairs ++ generate_pairs(rest)
   end
-
 
   @doc """
   Function to find every pair of elements in a list.
@@ -56,18 +55,20 @@ defmodule ElixirRigidPhysics.Util.List do
     iex> List.generate_pairs([1,2,3], fn(a,b) -> a * b > 3 end)
     [{2,3}]
   """
-  @spec generate_pairs( [any()], (any(), any() -> boolean()) ) :: [ {any(), any()} ]
+  @spec generate_pairs([any()], (any(), any() -> boolean())) :: [{any(), any()}]
   def generate_pairs([], _predicate), do: []
   def generate_pairs([_], _predicate), do: []
-  def generate_pairs([a,b], predicate) do
-    if (predicate.(a,b)) do
-      [{a,b}]
+
+  def generate_pairs([a, b], predicate) do
+    if predicate.(a, b) do
+      [{a, b}]
     else
       []
     end
   end
+
   def generate_pairs([a | rest], predicate) do
-    main_pairs = for i <- rest, predicate.(a,i), do: {a,i}
+    main_pairs = for i <- rest, predicate.(a, i), do: {a, i}
     main_pairs ++ generate_pairs(rest)
   end
 end
