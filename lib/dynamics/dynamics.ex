@@ -1,4 +1,7 @@
 defmodule ElixirRigidPhysics.Dynamics do
+  @moduledoc """
+  Dynamics module responsible for handling physics stepping and substepping of a world.
+  """
   alias ElixirRigidPhysics.World
   alias ElixirRigidPhysics.Collision.Broadphase
 
@@ -19,7 +22,7 @@ defmodule ElixirRigidPhysics.Dynamics do
 
     acc_struct = Broadphase.populate_acceleration_structure_from_bodies(old_acc_struct, bodies)
 
-    IO.inspect(Broadphase.generate_potential_colliding_pairs(acc_struct))
+    # IO.inspect(Broadphase.generate_potential_colliding_pairs(acc_struct))
 
     new_bodies =
       for {r,

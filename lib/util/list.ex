@@ -1,4 +1,8 @@
 defmodule ElixirRigidPhysics.Util.List do
+  @moduledoc """
+  List utils module for functions and things that should've been in the stdlib but aren't.
+  """
+
   @doc """
   Function to find every pair of elements in a list.
 

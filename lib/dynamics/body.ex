@@ -1,7 +1,10 @@
 defmodule ElixirRigidPhysics.Dynamics.Body do
+  @moduledoc """
+  Module to handle bodies, the fundamental unit of physics in ERP.
+  """
   alias Graphmath.Quatern
   alias Graphmath.Vec3
-  alias Graphmath.Geometry
+  alias ElixirRigidPhysics.Geometry
 
   require Record
 

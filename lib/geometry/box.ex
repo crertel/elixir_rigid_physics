@@ -26,5 +26,6 @@ defmodule ElixirRigidPhysics.Geometry.Box do
     iex> Box.create(1.0,2.0,3.0)
     {:box, 1.0, 2.0, 3.0}
   """
+  @spec create(number, number, number) :: box
   def create(w, h, d), do: box(width: w, height: h, depth: d)
 end

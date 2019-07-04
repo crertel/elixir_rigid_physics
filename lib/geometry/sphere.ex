@@ -24,5 +24,6 @@ defmodule ElixirRigidPhysics.Geometry.Sphere do
     iex> Sphere.create(2.0)
     {:sphere, 2.0}
   """
+  @spec create(number) :: sphere
   def create(radius), do: sphere(radius: radius)
 end

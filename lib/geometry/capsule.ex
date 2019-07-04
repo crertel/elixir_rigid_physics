@@ -27,6 +27,7 @@ defmodule ElixirRigidPhysics.Geometry.Capsule do
     iex> Capsule.create(2.0, 3.0)
     {:capsule, 2.0, 3.0}
   """
+  @spec create(number, number) :: capsule
   def create(axial_length, cap_radius),
     do: capsule(axial_length: axial_length, cap_radius: cap_radius)
 end

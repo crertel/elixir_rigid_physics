@@ -1,4 +1,12 @@
 defmodule ElixirRigidPhysics.Collision.Broadphase do
+  @moduledoc """
+  Module to handle broadphase collision detection.
+
+  Broadphase collision detection is when we check all of the bodies to see which ones _likely_ are colliding.
+  This information is then used to reduce the number of expensive checks we do in the narrowphase.
+
+  This module is also the current home of the acceleration structures for the broadphase, even though that's going to change.
+  """
   alias ElixirRigidPhysics.Util
   alias ElixirRigidPhysics.Collision.AABB
   alias ElixirRigidPhysics.Dynamics.Body
@@ -10,7 +18,7 @@ defmodule ElixirRigidPhysics.Collision.Broadphase do
   @type broadphase_acc_struct ::
           record(:broadphase_acc_struct, struct: [any], bodies: [body_acc_tuple])
 
-  @spec create_acceleration_structure :: broadphase_acc_struct
+  @spec create_acceleration_structure() :: broadphase_acc_struct
   def create_acceleration_structure() do
     broadphase_acc_struct()
   end

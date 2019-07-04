@@ -202,10 +202,11 @@ defmodule ElixirRigidPhysics do
     {:noreply, sim(s, world: new_world, next_tick: thandle)}
   end
 
+  @spec update_subscribers(MapSet.t(any), World.t()) :: :ok
   def update_subscribers(subscribers, world) do
-    MapSet.to_list(subscribers)
-    |> Enum.map(fn subscriber_pid ->
-      send(subscriber_pid, {:world_update, world})
-    end)
+    for subscriber_pid <- MapSet.to_list(subscribers),
+        do: send(subscriber_pid, {:world_update, world})
+
+    :ok
   end
 end
