@@ -1,5 +1,7 @@
 defmodule ElixirRigidPhysics.Dynamics.Body do
   alias Graphmath.Quatern
+  alias Graphmath.Vec3
+  alias Graphmath.Geometry
 
   require Record
 
@@ -16,6 +18,21 @@ defmodule ElixirRigidPhysics.Dynamics.Body do
     accumulated_torque: {0.0, 0.0, 0.0}
   )
 
+  @type body ::
+          record(:body,
+            shape: Geometry.geometry(),
+            mass: number,
+            position: Vec3.vec3(),
+            orientation: Quatern.quatern(),
+            linear_dampening: number,
+            angular_dampening: number,
+            linear_velocity: Vec3.vec3(),
+            angular_velocity: Vec3.vec3(),
+            accumulated_force: Vec3.vec3(),
+            accumulated_torque: Vec3.vec3()
+          )
+
+  @spec create(Geometry.geometry(), [{atom, any}]) :: body
   def create(shape, opts \\ []) do
     mass = Keyword.get(opts, :mass, 0)
     position = Keyword.get(opts, :position, {0, 0, 0})
@@ -38,6 +55,7 @@ defmodule ElixirRigidPhysics.Dynamics.Body do
     )
   end
 
+  @spec to_map(body) :: map()
   def to_map(
         body(
           shape: shape,

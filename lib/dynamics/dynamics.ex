@@ -5,6 +5,7 @@ defmodule ElixirRigidPhysics.Dynamics do
   alias Graphmath.Vec3
   alias Graphmath.Quatern
 
+  @spec step(World.t(), number) :: World.t()
   def step(
         %World{
           timestep: timestep,

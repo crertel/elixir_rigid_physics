@@ -13,6 +13,7 @@ defmodule ElixirRigidPhysics.Geometry.Capsule do
   """
   require Record
   Record.defrecord(:capsule, axial_length: 0.5, cap_radius: 0.25)
+  @type capsule :: record(:capsule, axial_length: number, cap_radius: number)
 
   @doc """
   Creates a capsule geometry.

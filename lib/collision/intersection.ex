@@ -17,8 +17,8 @@ defmodule ElixirRigidPhysics.Collision.Intersection do
 
   require ElixirRigidPhysics.Dynamics.Body, as: Body
   require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
-  #require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
-  #require ElixirRigidPhysics.Geometry.Box, as: Box
+  # require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+  # require ElixirRigidPhysics.Geometry.Box, as: Box
 
   alias Graphmath.Vec3
 
@@ -84,6 +84,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection do
     iex> Intersection.test_intersection(a,b)
     {:contact_manifold, {{:contact_point, {3.5, 0.0, 0.0}, 1.0}}, {1.0, 0.0, 0.0}}
   """
+  @spec test_intersection(Body.body(), Body.body()) :: ContactManifold.contact_manifold()
   def test_intersection(
         Body.body(shape: Sphere.sphere(radius: r_a), position: p_a),
         Body.body(shape: Sphere.sphere(radius: r_b), position: p_b)
@@ -91,17 +92,21 @@ defmodule ElixirRigidPhysics.Collision.Intersection do
     a_to_b = Vec3.subtract(p_b, p_a)
 
     a_to_b_dist_squared = Vec3.length_squared(a_to_b)
+
     if a_to_b_dist_squared > @verysmol do
       a_to_b_dist = Vec3.length(a_to_b)
       overlap = a_to_b_dist - (r_a + r_b)
+
       if overlap <= @verysmol do
         penetration_depth = abs(overlap)
         direction = Vec3.normalize(a_to_b)
+
         ContactManifold.contact_manifold(
-          contacts: { ContactPoint.contact_point(
-                        world_point: Vec3.scale(direction, r_a - penetration_depth/2) |> Vec3.add(p_a),
-                        depth: penetration_depth)
-                    },
+          contacts:
+            {ContactPoint.contact_point(
+               world_point: Vec3.scale(direction, r_a - penetration_depth / 2) |> Vec3.add(p_a),
+               depth: penetration_depth
+             )},
           world_normal: direction
         )
       else

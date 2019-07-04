@@ -1,6 +1,7 @@
 defmodule ElixirRigidPhysics.Collision.AABB do
   require Record
   Record.defrecord(:aabb, min: {0.0, 0.0, 0.0}, max: {0.0, 0.0, 0.0})
+  @type aabb :: record(:aabb, min: {number, number, number}, max: {number, number, number})
 
   require ElixirRigidPhysics.Dynamics.Body, as: Body
   require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
@@ -69,6 +70,7 @@ defmodule ElixirRigidPhysics.Collision.AABB do
     iex> Graphmath.Vec3.equal(min, newmin, 0.0001 ) and Graphmath.Vec3.equal(max, newmax, 0.00001 )
     true
   """
+  @spec create_world_from_body(Body.body()) :: AABB.aabb()
   def create_world_from_body(
         Body.body(shape: Sphere.sphere(radius: r) = _sphere, position: {px, py, pz})
       ) do
@@ -161,6 +163,7 @@ defmodule ElixirRigidPhysics.Collision.AABB do
     {:aabb, {-1.0, -3.0, -1.0}, {1.0, 3.0, 1.0}}
 
   """
+  @spec create_local_from_shape(Box.box() | Sphere.sphere() | Capsule.capsule()) :: AABB.aabb()
   def create_local_from_shape(Box.box(width: w, height: h, depth: d)) do
     aabb(
       min: {-w / 2, -h / 2, -d / 2},
@@ -212,6 +215,7 @@ defmodule ElixirRigidPhysics.Collision.AABB do
     iex> AABB.overlaps?(a,b)
     true
   """
+  @spec overlaps?(AABB.aabb(), AABB.aabb()) :: boolean()
   def overlaps?(
         aabb(min: {aminx, aminy, aminz}, max: {amaxx, amaxy, amaxz}),
         aabb(min: {bminx, bminy, bminz}, max: {bmaxx, bmaxy, bmaxz})

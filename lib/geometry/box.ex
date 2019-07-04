@@ -12,6 +12,7 @@ defmodule ElixirRigidPhysics.Geometry.Box do
   """
   require Record
   Record.defrecord(:box, width: 0.0, height: 0.0, depth: 0.0)
+  @type box :: record(:box, width: number, height: number, depth: number)
 
   @doc """
   Creates a box geometry.
