@@ -17,7 +17,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection do
 
   require ElixirRigidPhysics.Dynamics.Body, as: Body
   require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
-  # require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+  require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
   # require ElixirRigidPhysics.Geometry.Box, as: Box
 
   alias Graphmath.Vec3
@@ -83,6 +83,25 @@ defmodule ElixirRigidPhysics.Collision.Intersection do
     iex> b = Body.body( shape: Sphere.sphere(radius: 2) , position: {5.0, 0.0, 0.0})
     iex> Intersection.test_intersection(a,b)
     {:contact_manifold, {{:contact_point, {3.5, 0.0, 0.0}, 1.0}}, {1.0, 0.0, 0.0}}
+
+    iex> # Check non-touching capsules
+    iex> alias ElixirRigidPhysics.Collision.Intersection
+    iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+    iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
+    iex> a = Body.body( shape: Capsule.capsule(axial_length: 1, cap_radius: 0.5), position: {0.0, 0.0, 0.0})
+    iex> b = Body.body( shape: Capsule.capsule(axial_length: 1, cap_radius: 0.5), position: {5.0, 0.0, 0.0})
+    iex> Intersection.test_intersection(a,b)
+    :no_intersection
+
+    iex> # Check coincident capsules
+    iex> alias ElixirRigidPhysics.Collision.Intersection
+    iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+    iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
+    iex> a = Body.body( shape: Capsule.capsule(axial_length: 1, cap_radius: 0.5), position: {0.0, 0.0, 0.0})
+    iex> b = Body.body( shape: Capsule.capsule(axial_length: 1, cap_radius: 0.5), position: {0.0, 0.0, 0.0})
+    iex> Intersection.test_intersection(a,b)
+    :coincident
+
   """
   @spec test_intersection(Body.body(), Body.body()) :: ContactManifold.contact_manifold()
   def test_intersection(
