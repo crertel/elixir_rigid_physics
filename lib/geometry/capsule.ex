@@ -44,11 +44,11 @@ defmodule ElixirRigidPhysics.Geometry.Capsule do
     iex> Capsule.get_principle_points( Capsule.capsule(axial_length: 10.0, cap_radius: 0.5))
     { {0.0, -5.0, 0.0}, {0.0, 5.0, 0.0} }
   """
-  @spec get_principle_points( capsule ) :: { {number, number, number}, {number, number, number}}
-  def get_principle_points( capsule(axial_length: l)) do
+  @spec get_principle_points(capsule) :: {{number, number, number}, {number, number, number}}
+  def get_principle_points(capsule(axial_length: l)) do
     {
       {0.0, -l / 2.0, 0.0},
-      {0.0, l / 2.0, 0.0},
+      {0.0, l / 2.0, 0.0}
     }
   end
 end

@@ -193,37 +193,38 @@ defmodule ElixirRigidPhysics.Collision.Intersection do
         Body.body(shape: Sphere.sphere(radius: r_a), position: p_a),
         Body.body(shape: Capsule.capsule(cap_radius: cr_b) = c, position: p_b, orientation: o_b)
       ) do
+    # note that it might well be faster to transform the sphere to capsule space
+    {capsule_local_a, capsule_local_b} = Capsule.get_principle_points(c)
+    capsule_a = Quatern.transform_vector(o_b, capsule_local_a) |> Vec3.add(p_b)
+    capsule_b = Quatern.transform_vector(o_b, capsule_local_b) |> Vec3.add(p_b)
 
-        # note that it might well be faster to transform the sphere to capsule space
-        {capsule_local_a, capsule_local_b} = Capsule.get_principle_points(c)
-        capsule_a = Quatern.transform_vector(o_b, capsule_local_a) |> Vec3.add(p_b)
-        capsule_b = Quatern.transform_vector(o_b, capsule_local_b) |> Vec3.add(p_b)
+    nearest_in_capsule = GUtil.closest_point_on_line_to_point(p_a, capsule_a, capsule_b)
+    vec_to_capsule = Vec3.subtract(nearest_in_capsule, p_a)
+    dist_to_capsule = vec_to_capsule |> Vec3.length()
 
-        nearest_in_capsule = GUtil.closest_point_on_line_to_point(p_a, capsule_a, capsule_b)
-        vec_to_capsule = Vec3.subtract(nearest_in_capsule, p_a)
-        dist_to_capsule = vec_to_capsule |> Vec3.length()
+    cond do
+      dist_to_capsule > r_a + cr_b ->
+        :no_intersection
 
-        cond do
-          dist_to_capsule > r_a + cr_b -> :no_intersection
-          dist_to_capsule <= @verysmol -> :coincident
-          true ->
+      dist_to_capsule <= @verysmol ->
+        :coincident
 
-            overlap = dist_to_capsule - (r_a + cr_b)
-            penetration_depth = abs(overlap)
-            direction = Vec3.normalize(vec_to_capsule)
+      true ->
+        overlap = dist_to_capsule - (r_a + cr_b)
+        penetration_depth = abs(overlap)
+        direction = Vec3.normalize(vec_to_capsule)
 
-            ContactManifold.contact_manifold(
-              contacts:
-                {ContactPoint.contact_point(
-                  world_point: Vec3.scale(direction, r_a - penetration_depth / 2) |> Vec3.add(p_a),
-                  depth: penetration_depth
-                )},
-              world_normal: direction
-            )
-        end
-      end
+        ContactManifold.contact_manifold(
+          contacts:
+            {ContactPoint.contact_point(
+               world_point: Vec3.scale(direction, r_a - penetration_depth / 2) |> Vec3.add(p_a),
+               depth: penetration_depth
+             )},
+          world_normal: direction
+        )
+    end
+  end
 end
-
 
 # iex> # Check non-touching capsules
 #     iex> alias ElixirRigidPhysics.Collision.Intersection
