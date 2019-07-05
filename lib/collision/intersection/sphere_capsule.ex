@@ -1,90 +1,89 @@
 defmodule ElixirRigidPhysics.Collision.Intersection.SphereCapsule do
+  @moduledoc """
+  Module for sphere-capsule intersection tests.
+  """
 
-    @moduledoc """
-    Module for sphere-capsule intersection tests.
-    """
+  require ElixirRigidPhysics.Dynamics.Body, as: Body
+  require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
+  require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+  require ElixirRigidPhysics.Collision.ContactManifold, as: ContactManifold
+  require ElixirRigidPhysics.Collision.ContactPoint, as: ContactPoint
 
-    require ElixirRigidPhysics.Dynamics.Body, as: Body
-    require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
-    require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
-    require ElixirRigidPhysics.Collision.ContactManifold, as: ContactManifold
-    require ElixirRigidPhysics.Collision.ContactPoint, as: ContactPoint
+  alias ElixirRigidPhysics.Geometry.Util, as: GUtil
+  alias Graphmath.Vec3
+  alias Graphmath.Quatern
 
-    alias ElixirRigidPhysics.Geometry.Util, as: GUtil
-    alias Graphmath.Vec3
-    alias Graphmath.Quatern
+  @verysmol 1.0e-12
 
-    @verysmol 1.0e-12
+  @doc """
+  Check the intersection of a sphere and a capsule.
 
-    @doc """
-    Check the intersection of a sphere and a capsule.
+  ## Examples
+    iex> # Check non-touching capsule and sphere
+    iex> alias ElixirRigidPhysics.Collision.Intersection.SphereCapsule
+    iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+    iex> require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
+    iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
+    iex> a = Body.body( shape: Sphere.sphere(radius: 1) , position: {35.0, 0.0, 0.0})
+    iex> b = Body.body( shape: Capsule.capsule(axial_length: 1, cap_radius: 0.5), position: {0.0, 0.0, 0.0})
+    iex> SphereCapsule.check(a,b)
+    :no_intersection
 
-    ## Examples
-      iex> # Check non-touching capsule and sphere
-      iex> alias ElixirRigidPhysics.Collision.Intersection.SphereCapsule
-      iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
-      iex> require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
-      iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
-      iex> a = Body.body( shape: Sphere.sphere(radius: 1) , position: {35.0, 0.0, 0.0})
-      iex> b = Body.body( shape: Capsule.capsule(axial_length: 1, cap_radius: 0.5), position: {0.0, 0.0, 0.0})
-      iex> SphereCapsule.check(a,b)
-      :no_intersection
+    iex> # Check coincident capsule and sphere
+    iex> alias ElixirRigidPhysics.Collision.Intersection.SphereCapsule
+    iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+    iex> require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
+    iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
+    iex> a = Body.body( shape: Sphere.sphere(radius: 1) , position: {1.0, 0.0, 0.0})
+    iex> b = Body.body( shape: Capsule.capsule(axial_length: 2, cap_radius: 0.5), position: {1.0, 0.0, 0.0})
+    iex> SphereCapsule.check(a,b)
+    :coincident
 
-      iex> # Check coincident capsule and sphere
-      iex> alias ElixirRigidPhysics.Collision.Intersection.SphereCapsule
-      iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
-      iex> require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
-      iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
-      iex> a = Body.body( shape: Sphere.sphere(radius: 1) , position: {1.0, 0.0, 0.0})
-      iex> b = Body.body( shape: Capsule.capsule(axial_length: 2, cap_radius: 0.5), position: {1.0, 0.0, 0.0})
-      iex> SphereCapsule.check(a,b)
-      :coincident
+    iex> # Check side-grazing capsule and sphere
+    iex> alias ElixirRigidPhysics.Collision.Intersection.SphereCapsule
+    iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+    iex> require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
+    iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
+    iex> a = Body.body( shape: Sphere.sphere(radius: 1) , position: {2.0, 0.0, 0.0})
+    iex> b = Body.body( shape: Capsule.capsule(axial_length: 2, cap_radius: 1), position: {0.0, 0.0, 0.0})
+    iex> SphereCapsule.check(a,b)
+    {:contact_manifold, {{:contact_point, {1.0, 0.0, 0.0}, 0.0}}, {-1.0, 0.0, 0.0}}
 
-      iex> # Check side-grazing capsule and sphere
-      iex> alias ElixirRigidPhysics.Collision.Intersection.SphereCapsule
-      iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
-      iex> require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
-      iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
-      iex> a = Body.body( shape: Sphere.sphere(radius: 1) , position: {2.0, 0.0, 0.0})
-      iex> b = Body.body( shape: Capsule.capsule(axial_length: 2, cap_radius: 1), position: {0.0, 0.0, 0.0})
-      iex> SphereCapsule.check(a,b)
-      {:contact_manifold, {{:contact_point, {1.0, 0.0, 0.0}, 0.0}}, {-1.0, 0.0, 0.0}}
+    iex> # Check top-grazing capsule and sphere
+    iex> alias ElixirRigidPhysics.Collision.Intersection.SphereCapsule
+    iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+    iex> require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
+    iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
+    iex> sqrthalf = :math.sqrt(0.5)
+    iex> a = Body.body( shape: Sphere.sphere(radius: 1) , position: {0.0, 0.0, 4.0})
+    iex> b = Body.body( shape: Capsule.capsule(axial_length: 4, cap_radius: 1), orientation: {sqrthalf, sqrthalf, 0.0, 0.0})
+    iex> {:contact_manifold, {{:contact_point, {0.0, 0.0, 3.0}, distance}}, {0.0, 0.0, -1.0}} = SphereCapsule.check(a,b)
+    iex> distance < 0.0001
+    true
 
-      iex> # Check top-grazing capsule and sphere
-      iex> alias ElixirRigidPhysics.Collision.Intersection.SphereCapsule
-      iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
-      iex> require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
-      iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
-      iex> sqrthalf = :math.sqrt(0.5)
-      iex> a = Body.body( shape: Sphere.sphere(radius: 1) , position: {0.0, 0.0, 4.0})
-      iex> b = Body.body( shape: Capsule.capsule(axial_length: 4, cap_radius: 1), orientation: {sqrthalf, sqrthalf, 0.0, 0.0})
-      iex> {:contact_manifold, {{:contact_point, {0.0, 0.0, 3.0}, distance}}, {0.0, 0.0, -1.0}} = SphereCapsule.check(a,b)
-      iex> distance < 0.0001
-      true
+    iex> # Check partially overlapping sphere and capsule
+    iex> # Check side-grazing capsule and sphere
+    iex> alias ElixirRigidPhysics.Collision.Intersection.SphereCapsule
+    iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+    iex> require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
+    iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
+    iex> a = Body.body( shape: Sphere.sphere(radius: 3) , position: {4.0, 0.0, 0.0})
+    iex> b = Body.body( shape: Capsule.capsule(axial_length: 12, cap_radius: 2))
+    iex> SphereCapsule.check(a,b)
+    {:contact_manifold, {{:contact_point, {1.5, 0.0, 0.0}, 1.0}}, {-1.0, 0.0, 0.0}}
 
-      iex> # Check partially overlapping sphere and capsule
-      iex> # Check side-grazing capsule and sphere
-      iex> alias ElixirRigidPhysics.Collision.Intersection.SphereCapsule
-      iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
-      iex> require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
-      iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
-      iex> a = Body.body( shape: Sphere.sphere(radius: 3) , position: {4.0, 0.0, 0.0})
-      iex> b = Body.body( shape: Capsule.capsule(axial_length: 12, cap_radius: 2))
-      iex> SphereCapsule.check(a,b)
-      {:contact_manifold, {{:contact_point, {1.5, 0.0, 0.0}, 1.0}}, {-1.0, 0.0, 0.0}}
-
-      iex> # Check completely contained sphere and capsule
-      iex> # Check side-grazing capsule and sphere
-      iex> alias ElixirRigidPhysics.Collision.Intersection.SphereCapsule
-      iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
-      iex> require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
-      iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
-      iex> a = Body.body( shape: Sphere.sphere(radius: 2) , position: {3.0, 0.0, 0.0})
-      iex> b = Body.body( shape: Capsule.capsule(axial_length: 12, cap_radius: 5))
-      iex> SphereCapsule.check(a,b)
-      {:contact_manifold, {{:contact_point, {3.0, 0.0, 0.0}, 4.0}}, {-1.0, 0.0, 0.0}}
-    """
-    def check(
+    iex> # Check completely contained sphere and capsule
+    iex> # Check side-grazing capsule and sphere
+    iex> alias ElixirRigidPhysics.Collision.Intersection.SphereCapsule
+    iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+    iex> require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
+    iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
+    iex> a = Body.body( shape: Sphere.sphere(radius: 2) , position: {3.0, 0.0, 0.0})
+    iex> b = Body.body( shape: Capsule.capsule(axial_length: 12, cap_radius: 5))
+    iex> SphereCapsule.check(a,b)
+    {:contact_manifold, {{:contact_point, {3.0, 0.0, 0.0}, 4.0}}, {-1.0, 0.0, 0.0}}
+  """
+  def check(
         Body.body(shape: Sphere.sphere(radius: r_a), position: p_a),
         Body.body(shape: Capsule.capsule(cap_radius: cr_b) = c, position: p_b, orientation: o_b)
       ) do
