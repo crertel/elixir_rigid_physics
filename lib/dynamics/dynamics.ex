@@ -34,7 +34,7 @@ defmodule ElixirRigidPhysics.Dynamics do
            ) = b} <- bodies,
           into: %{} do
         # integrate linear velocity
-        new_position = Vec3.scale(linear_velocity, dt) |> Vec3.add(position)
+        new_position = linear_velocity |> Vec3.scale(dt) |> Vec3.add(position)
 
         # integrate angular velocity
         new_orientation = Quatern.integrate(orientation, angular_velocity, dt)

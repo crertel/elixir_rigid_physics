@@ -175,7 +175,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection do
         ContactManifold.contact_manifold(
           contacts:
             {ContactPoint.contact_point(
-               world_point: Vec3.scale(direction, r_a - penetration_depth / 2) |> Vec3.add(p_a),
+               world_point: direction |> Vec3.scale(r_a - penetration_depth / 2) |> Vec3.add(p_a),
                depth: penetration_depth
              )},
           world_normal: direction
@@ -195,8 +195,8 @@ defmodule ElixirRigidPhysics.Collision.Intersection do
       ) do
     # note that it might well be faster to transform the sphere to capsule space
     {capsule_local_a, capsule_local_b} = Capsule.get_principle_points(c)
-    capsule_a = Quatern.transform_vector(o_b, capsule_local_a) |> Vec3.add(p_b)
-    capsule_b = Quatern.transform_vector(o_b, capsule_local_b) |> Vec3.add(p_b)
+    capsule_a = o_b |> Quatern.transform_vector(capsule_local_a) |> Vec3.add(p_b)
+    capsule_b = o_b |> Quatern.transform_vector(capsule_local_b) |> Vec3.add(p_b)
 
     nearest_in_capsule = GUtil.closest_point_on_line_to_point(p_a, capsule_a, capsule_b)
     vec_to_capsule = Vec3.subtract(nearest_in_capsule, p_a)
@@ -217,7 +217,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection do
         ContactManifold.contact_manifold(
           contacts:
             {ContactPoint.contact_point(
-               world_point: Vec3.scale(direction, r_a - penetration_depth / 2) |> Vec3.add(p_a),
+               world_point: direction |> Vec3.scale(r_a - penetration_depth / 2) |> Vec3.add(p_a),
                depth: penetration_depth
              )},
           world_normal: direction
