@@ -21,6 +21,7 @@ defmodule ElixirRigidPhysics.Collision.Narrowphase do
 
   alias ElixirRigidPhysics.Collision.Intersection.SphereSphere
   alias ElixirRigidPhysics.Collision.Intersection.SphereCapsule
+  alias ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule
 
   @doc """
   Tests the intersection of two shapes.
@@ -31,31 +32,9 @@ defmodule ElixirRigidPhysics.Collision.Narrowphase do
 
   def test_intersection( Body.body(shape: Sphere.sphere()) = a, Body.body(shape: Capsule.capsule()) = b),
     do: SphereCapsule.check(a, b)
+
+  def test_intersection( Body.body(shape: Capsule.capsule()) = a, Body.body(shape: Capsule.capsule()) = b),
+    do: CapsuleCapsule.check(a, b)
+
+  def test_intersection(_,_), do: {:error, :bad_bodies}
 end
-
-# iex> # Check non-touching capsules
-#     iex> alias ElixirRigidPhysics.Collision.Intersection
-#     iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
-#     iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
-#     iex> a = Body.body( shape: Capsule.capsule(axial_length: 1, cap_radius: 0.5), position: {0.0, 0.0, 0.0})
-#     iex> b = Body.body( shape: Capsule.capsule(axial_length: 1, cap_radius: 0.5), position: {5.0, 0.0, 0.0})
-#     iex> Intersection.test_intersection(a,b)
-#     :no_intersection
-
-#     iex> # Check coincident capsules
-#     iex> alias ElixirRigidPhysics.Collision.Intersection
-#     iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
-#     iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
-#     iex> a = Body.body( shape: Capsule.capsule(axial_length: 1, cap_radius: 0.5), position: {0.0, 0.0, 0.0})
-#     iex> b = Body.body( shape: Capsule.capsule(axial_length: 1, cap_radius: 0.5), position: {0.0, 0.0, 0.0})
-#     iex> Intersection.test_intersection(a,b)
-#     :coincident
-
-#     iex> # Check grazing cap contact
-#     iex> alias ElixirRigidPhysics.Collision.Intersection
-#     iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
-#     iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
-#     iex> a = Body.body( shape: Capsule.capsule(axial_length: 3.0, cap_radius: 0.5), position: {0.0, 0.0, 0.0})
-#     iex> b = Body.body( shape: Capsule.capsule(axial_length: 2.0, cap_radius: 1.0), position: {0.0, 4.0, 0.0})
-#     iex> Intersection.test_intersection(a,b)
-#     {:contact_manifold, {{:contact_point, {0.0, 2.0, 0.0}, 1.0}}, {0.0, 1.0, 0.0}}
