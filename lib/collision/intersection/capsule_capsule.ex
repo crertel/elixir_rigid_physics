@@ -4,7 +4,6 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
   """
 
   require ElixirRigidPhysics.Dynamics.Body, as: Body
-  require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
   require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
   require ElixirRigidPhysics.Collision.ContactManifold, as: ContactManifold
   require ElixirRigidPhysics.Collision.ContactPoint, as: ContactPoint
@@ -25,7 +24,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
     iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
     iex> a = Body.body( shape: Capsule.capsule(axial_length: 1, cap_radius: 0.5), position: {0.0, 0.0, 0.0})
     iex> b = Body.body( shape: Capsule.capsule(axial_length: 1, cap_radius: 0.5), position: {5.0, 0.0, 0.0})
-    iex> Intersection.test_intersection(a,b)
+    iex> Intersection.check(a,b)
     :no_intersection
 
     iex> # Check coincident capsules
@@ -34,7 +33,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
     iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
     iex> a = Body.body( shape: Capsule.capsule(axial_length: 1, cap_radius: 0.5), position: {0.0, 0.0, 0.0})
     iex> b = Body.body( shape: Capsule.capsule(axial_length: 1, cap_radius: 0.5), position: {0.0, 0.0, 0.0})
-    iex> Intersection.test_intersection(a,b)
+    iex> Intersection.check(a,b)
     :coincident
 
     iex> # Check grazing cap contact
@@ -43,7 +42,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
     iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
     iex> a = Body.body( shape: Capsule.capsule(axial_length: 3.0, cap_radius: 0.5), position: {0.0, 0.0, 0.0})
     iex> b = Body.body( shape: Capsule.capsule(axial_length: 2.0, cap_radius: 1.0), position: {0.0, 4.0, 0.0})
-    iex> Intersection.test_intersection(a,b)
+    iex> Intersection.check(a,b)
     {:contact_manifold, {{:contact_point, {0.0, 2.0, 0.0}, 1.0}}, {0.0, 1.0, 0.0}}
 
   """
