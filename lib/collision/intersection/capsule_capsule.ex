@@ -72,8 +72,8 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
             # degenerate capsules :(, 1 contact point
           else
             # happy caqpsules :)
-            a_axis = Vec3.scale(a_spine, :math.sqrt(a_spine_lengthsq)
-            b_axis = Vec3.scale(b_spine, :math.sqrt(b_spine_lengthsq)
+            a_axis = Vec3.scale(a_spine, :math.sqrt(a_spine_lengthsq))
+            b_axis = Vec3.scale(b_spine, :math.sqrt(b_spine_lengthsq))
             capsule_angle = :math.acos( Vec3.dot(a_axis, b_axis))
             if :math.fmod( capsule_angle, :math.pi) > @verysmol do
               # non-parallel capsules, 1 contact poiont
