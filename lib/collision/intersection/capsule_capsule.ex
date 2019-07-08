@@ -54,15 +54,28 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
     iex> CapsuleCapsule.check(a,b)
     {:contact_manifold, {{:contact_point, {0.0, 2.0, 0.0}, 14.0}}, {0.0, 1.0, 0.0}}
 
+    iex> # Check penetrating side contact
+    iex> alias ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule
+    iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+    iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
+    iex> sqrthalf = :math.sqrt(0.5)
+    iex> a = Body.body( shape: Capsule.capsule(axial_length: 2.0, cap_radius: 1), position: {0.0, 0.0, 3.5})
+    iex> b = Body.body( shape: Capsule.capsule(axial_length: 4.0, cap_radius: 1), orientation: {sqrthalf, sqrthalf, 0.0, 0.0})
+    iex> res = CapsuleCapsule.check(a,b)
+    iex> match?({:contact_manifold, {{:contact_point, {0.0, 0.0, 2.75}, _}}, {0.0, 0.0, -1.0}} ,res )
+    true
+    iex> {:contact_manifold, {{:contact_point, {0.0, 0.0, 2.75}, d}}, {0.0, 0.0, -1.0}} = res
+    iex> Float.round(d,2) == 0.5
+    true
   """
   def check(
-        Body.body(shape: Capsule.capsule(cap_radius: cr_a) = cap_a, position: p_a, orientation: o_b),
+        Body.body(shape: Capsule.capsule(cap_radius: cr_a) = cap_a, position: p_a, orientation: o_a),
         Body.body(shape: Capsule.capsule(cap_radius: cr_b) = cap_b, position: p_b, orientation: o_b)
       ) do
       {capsule_local_a_1, capsule_local_a_2} = Capsule.get_principle_points(cap_a)
       {capsule_local_b_1, capsule_local_b_2} = Capsule.get_principle_points(cap_b)
-      capsule_world_a_1 = o_b |> Quatern.transform_vector(capsule_local_a_1) |> Vec3.add(p_a)
-      capsule_world_a_2 = o_b |> Quatern.transform_vector(capsule_local_a_2) |> Vec3.add(p_a)
+      capsule_world_a_1 = o_a |> Quatern.transform_vector(capsule_local_a_1) |> Vec3.add(p_a)
+      capsule_world_a_2 = o_a |> Quatern.transform_vector(capsule_local_a_2) |> Vec3.add(p_a)
       capsule_world_b_1 = o_b |> Quatern.transform_vector(capsule_local_b_1) |> Vec3.add(p_b)
       capsule_world_b_2 = o_b |> Quatern.transform_vector(capsule_local_b_2) |> Vec3.add(p_b)
 
@@ -100,6 +113,20 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
             capsule_angle = :math.acos( Vec3.dot(a_axis, b_axis))
             if :math.fmod( capsule_angle, :math.pi) > @verysmol do
               # non-parallel capsules, 1 contact poiont
+              a_to_b = Vec3.subtract(cap_b_nearest, cap_a_nearest)
+              a_to_b_dist = Vec3.length(a_to_b)
+              overlap = a_to_b_dist - (cr_a + cr_b)
+              penetration_depth = abs(overlap)
+              direction = Vec3.normalize(a_to_b)
+
+              ContactManifold.contact_manifold(
+                contacts:
+                  {ContactPoint.contact_point(
+                    world_point: direction |> Vec3.scale(cr_a - penetration_depth / 2) |> Vec3.add(p_a),
+                    depth: penetration_depth
+                  )},
+                world_normal: direction
+              )
             else
               # parallel (stacked!) capsules, 2 contact points
             end
