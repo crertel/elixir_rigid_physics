@@ -36,6 +36,15 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
     iex> CapsuleCapsule.check(a,b)
     :coincident
 
+    iex> # Check degenerate capsule contact
+    iex> alias ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule
+    iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+    iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
+    iex> a = Body.body( shape: Capsule.capsule(axial_length: 0.0, cap_radius: 1.0), position: {0.0, 0.0, 0.0})
+    iex> b = Body.body( shape: Capsule.capsule(axial_length: 2.0, cap_radius: 1.0), position: {0.0, 3.0, 0.0})
+    iex> CapsuleCapsule.check(a,b)
+    {:contact_manifold, {{:contact_point, {0.0, 1.0, 0.0}, 0.0}}, {0.0, 1.0, 0.0}}
+
     iex> # Check grazing cap contact
     iex> alias ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule
     iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
@@ -43,7 +52,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
     iex> a = Body.body( shape: Capsule.capsule(axial_length: 3.0, cap_radius: 0.5), position: {0.0, 0.0, 0.0})
     iex> b = Body.body( shape: Capsule.capsule(axial_length: 2.0, cap_radius: 1.0), position: {0.0, 4.0, 0.0})
     iex> CapsuleCapsule.check(a,b)
-    {:contact_manifold, {{:contact_point, {0.0, 2.0, 0.0}, 1.0}}, {0.0, 1.0, 0.0}}
+    {:contact_manifold, {{:contact_point, {0.0, 2.0, 0.0}, 14.0}}, {0.0, 1.0, 0.0}}
 
   """
   def check(
@@ -70,10 +79,24 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
           b_spine_lengthsq = Vec3.length_squared(b_spine)
           if a_spine_lengthsq < @verysmol or b_spine_lengthsq < @verysmol do
             # degenerate capsules :(, 1 contact point
+            a_to_b = Vec3.subtract(cap_b_nearest, cap_a_nearest)
+            a_to_b_dist = Vec3.length(a_to_b)
+            overlap = a_to_b_dist - (cr_a + cr_b)
+            penetration_depth = abs(overlap)
+            direction = Vec3.normalize(a_to_b)
+
+            ContactManifold.contact_manifold(
+              contacts:
+                {ContactPoint.contact_point(
+                  world_point: direction |> Vec3.scale(cr_a - penetration_depth / 2) |> Vec3.add(p_a),
+                  depth: penetration_depth
+                )},
+              world_normal: direction
+            )
           else
-            # happy caqpsules :)
-            a_axis = Vec3.scale(a_spine, :math.sqrt(a_spine_lengthsq))
-            b_axis = Vec3.scale(b_spine, :math.sqrt(b_spine_lengthsq))
+            # happy capsules :)
+            a_axis = Vec3.scale(a_spine, 1.0/ :math.sqrt(a_spine_lengthsq))
+            b_axis = Vec3.scale(b_spine, 1.0/ :math.sqrt(b_spine_lengthsq))
             capsule_angle = :math.acos( Vec3.dot(a_axis, b_axis))
             if :math.fmod( capsule_angle, :math.pi) > @verysmol do
               # non-parallel capsules, 1 contact poiont
