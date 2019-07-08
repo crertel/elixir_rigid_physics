@@ -33,6 +33,9 @@ defmodule ElixirRigidPhysics.Collision.Narrowphase do
   def test_intersection( Body.body(shape: Sphere.sphere()) = a, Body.body(shape: Capsule.capsule()) = b),
     do: SphereCapsule.check(a, b)
 
+  def test_intersection( Body.body(shape: Capsule.capsule()) = b, Body.body(shape: Sphere.sphere()) = a),
+    do: SphereCapsule.check(a, b)
+
   def test_intersection( Body.body(shape: Capsule.capsule()) = a, Body.body(shape: Capsule.capsule()) = b),
     do: CapsuleCapsule.check(a, b)
 
