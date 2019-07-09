@@ -122,7 +122,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
               ContactManifold.contact_manifold(
                 contacts:
                   {ContactPoint.contact_point(
-                    world_point: direction |> Vec3.scale(cr_a - penetration_depth / 2) |> Vec3.add(p_a),
+                    world_point: direction |> Vec3.scale(cr_a - penetration_depth / 2) |> Vec3.add(cap_a_nearest),
                     depth: penetration_depth
                   )},
                 world_normal: direction

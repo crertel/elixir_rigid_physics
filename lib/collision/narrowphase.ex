@@ -26,7 +26,7 @@ defmodule ElixirRigidPhysics.Collision.Narrowphase do
   @doc """
   Tests the intersection of two shapes.
   """
-  @spec test_intersection( Body.body, Body.body) :: ContactManifold.contact_manifold()
+  @spec test_intersection( Body.body, Body.body) :: ContactManifold.contact_manifold() | :no_intersection | :coincident
   def test_intersection( Body.body(shape: Sphere.sphere()) = a, Body.body(shape: Sphere.sphere()) = b),
     do: SphereSphere.check(a, b)
 
