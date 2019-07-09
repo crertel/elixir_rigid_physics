@@ -9,6 +9,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
   require ElixirRigidPhysics.Collision.ContactPoint, as: ContactPoint
 
   alias ElixirRigidPhysics.Geometry.Util, as: GUtil
+  alias ElixirRigidPhysics.Geometry.Plane, as: Plane
   alias Graphmath.Vec3
   alias Graphmath.Quatern
 
@@ -81,8 +82,10 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
 
       {dist, cap_a_nearest, cap_b_nearest} = GUtil.nearest_points_for_segments({capsule_world_a_1, capsule_world_a_2}, {capsule_world_b_1, capsule_world_b_2})
 
+      min_distance = cr_a + cr_b
+
       cond do
-        dist > cr_a + cr_b -> :no_intersection
+        dist > min_distance -> :no_intersection
         dist < @verysmol -> :coincident
         true ->
           # we need to see if the capsules are parallel or not,
@@ -115,7 +118,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
               # non-parallel capsules, 1 contact poiont
               a_to_b = Vec3.subtract(cap_b_nearest, cap_a_nearest)
               a_to_b_dist = Vec3.length(a_to_b)
-              overlap = a_to_b_dist - (cr_a + cr_b)
+              overlap = a_to_b_dist - (min_distance)
               penetration_depth = abs(overlap)
               direction = Vec3.normalize(a_to_b)
 
@@ -129,6 +132,74 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
               )
             else
               # parallel (stacked!) capsules, 2 contact points
+
+              # clip spine of secondary shape to primary shape (note a-axis points inwards)
+              a_21_axis = a_axis
+              a_12_axis = Vec3.scale(a_axis, -1.0)
+              a_plane_1 = Plane.create(a_12_axis, capsule_world_a_1)
+              a_plane_2 = Plane.create(a_21_axis, capsule_world_a_2)
+
+              half_clipped_b_1 = Plane.clip_point(a_plane_1, capsule_world_b_1)
+              half_clipped_b_2 = Plane.clip_point(a_plane_2, capsule_world_b_2)
+              clipped_b_1 = Plane.clip_point(a_plane_1, half_clipped_b_1)
+              clipped_b_2 = Plane.clip_point(a_plane_2, half_clipped_b_2)
+
+              clipped_nearest_1 = GUtil.closest_point_on_line_to_point(clipped_b_1, capsule_world_a_1, capsule_world_a_2)
+              clipped_nearest_2 = GUtil.closest_point_on_line_to_point(clipped_b_2, capsule_world_a_1, capsule_world_a_2)
+              dir_clipped_1 = Vec3.subtract(clipped_nearest_1, clipped_b_1)
+              dir_clipped_2 = Vec3.subtract(clipped_nearest_2, clipped_b_2)
+              distance_clipped_1 = dir_clipped_1 |> Vec3.length()
+              distance_clipped_2 = dir_clipped_2 |> Vec3.length()
+
+              cond do
+                distance_clipped_1 <= min_distance and distance_clipped_2 <= min_distance ->
+                  overlap1 = distance_clipped_1 - (min_distance)
+                  overlap2 = distance_clipped_2 - (min_distance)
+                  penetration_depth1 = abs(overlap1)
+                  penetration_depth2 = abs(overlap2)
+                  ndir_clipped_1 = Vec3.normalize(dir_clipped_1)
+                  ndir_clipped_2 = Vec3.normalize(dir_clipped_2)
+
+                  ContactManifold.contact_manifold(
+                  contacts:
+                    {ContactPoint.contact_point(
+                      world_point: ndir_clipped_1 |> Vec3.scale(cr_a - penetration_depth1 / 2) |> Vec3.add(clipped_nearest_1),
+                      depth: penetration_depth1
+                    ),
+                    ContactPoint.contact_point(
+                      world_point: ndir_clipped_2 |> Vec3.scale(cr_a - penetration_depth2 / 2) |> Vec3.add(clipped_nearest_2),
+                      depth: penetration_depth2
+                    )},
+                  world_normal: ndir_clipped_1
+                )
+
+                distance_clipped_2 <= min_distance -> # 1 is out of distance, somehow
+                  overlap2 = distance_clipped_2 - (min_distance)
+                  penetration_depth2 = abs(overlap2)
+                  ndir_clipped_2 = Vec3.normalize(dir_clipped_2)
+                  ContactManifold.contact_manifold(
+                  contacts:
+                    {ContactPoint.contact_point(
+                      world_point: ndir_clipped_2 |> Vec3.scale(cr_a - penetration_depth2 / 2) |> Vec3.add(clipped_nearest_2),
+                      depth: penetration_depth2
+                    )},
+                  world_normal: ndir_clipped_2
+                )
+
+                distance_clipped_1 <= min_distance -> # 2 is out of distance, somehow
+                  overlap1 = distance_clipped_1 - (min_distance)
+                  penetration_depth1 = abs(overlap1)
+                  IO.inspect(dir_clipped_1, label: "ah")
+                  ndir_clipped_1 = Vec3.normalize(dir_clipped_1)
+                  ContactManifold.contact_manifold(
+                  contacts:
+                    {ContactPoint.contact_point(
+                      world_point: ndir_clipped_1 |> Vec3.scale(cr_a - penetration_depth1 / 2) |> Vec3.add(clipped_nearest_1),
+                      depth: penetration_depth1
+                    )},
+                  world_normal: ndir_clipped_1
+                )
+              end
             end
           end
       end
