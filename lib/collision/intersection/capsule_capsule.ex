@@ -78,7 +78,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
     iex> Float.round(d,2) == 0.5
     true
 
-    iex> # Check stacking
+    iex> # IO.puts("Check stacking")
     iex> alias ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule
     iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
     iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
@@ -87,7 +87,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
     iex> CapsuleCapsule.check(a,b)
     {:contact_manifold, {{:contact_point, {1.0, -1.0, 0.0}, 0.0}, {:contact_point, {1.0, 1.0, 0.0}, 0.0}}, {-1.0, 0.0, 0.0}}
 
-    iex> # Check stacking with contained, smaller b
+    iex> # IO.puts("Check stacking with contained, smaller b")
     iex> alias ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule
     iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
     iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
@@ -96,17 +96,42 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
     iex> CapsuleCapsule.check(a,b)
     {:contact_manifold, {{:contact_point, {1.0, -0.5, 0.0}, 0.0}, {:contact_point, {1.0, 0.5, 0.0}, 0.0}}, {-1.0, 0.0, 0.0}}
 
-    iex> # Check stacking of transformed capsules
-    iex> #alias ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule
-    iex> #require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
-    iex> #require ElixirRigidPhysics.Dynamics.Body, as: Body
-    iex> #sqrthalf = :math.sqrt(0.5)
-    iex> #a = Body.body( shape: Capsule.capsule(axial_length: 2.0, cap_radius: 1.0), position: {0.0, 2.0, 0.0}, orientation: {sqrthalf, sqrthalf, 0.0, 0.0})
-    iex> #b = Body.body( shape: Capsule.capsule(axial_length: 4.0, cap_radius: 1.0), position: {0.0, 0.0, 0.0}, orientation: {sqrthalf, sqrthalf, 0.0, 0.0})
-    iex> #CapsuleCapsule.check(a,b) {:contact_manifold, {{:contact_point, {0.0, 1.0, -1.0}, 0.0}, {:contact_point, {0.0, 1.0, 1.0}, 0.0}}, {0.0, -1.0, 0.0}}
-    iex> true
+    iex> # IO.puts("Check stacking with uncontained, larger b")
+    iex> alias ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule
+    iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+    iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
+    iex> a = Body.body( shape: Capsule.capsule(axial_length: 2.0, cap_radius: 1.0), position: {2.0, 0.0, 0.0})
+    iex> b = Body.body( shape: Capsule.capsule(axial_length: 20.0, cap_radius: 1.0), position: {0.0, 0.0, 0.0})
+    iex> CapsuleCapsule.check(a,b)
+    {:contact_manifold, {{:contact_point, {1.0, -1.0, 0.0}, 0.0}, {:contact_point, {1.0, 1.0, 0.0}, 0.0}}, {-1.0, 0.0, 0.0}}
+
+    iex> # IO.puts("Check stacking of transformed capsules")
+    iex> alias ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule
+    iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+    iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
+    iex> sqrthalf = :math.sqrt(0.5)
+    iex> a = Body.body( shape: Capsule.capsule(axial_length: 2.0, cap_radius: 1.0), position: {0.0, 2.0, 0.0}, orientation: {sqrthalf, sqrthalf, 0.0, 0.0})
+    iex> b = Body.body( shape: Capsule.capsule(axial_length: 4.0, cap_radius: 1.0), position: {0.0, 0.0, 0.0}, orientation: {sqrthalf, sqrthalf, 0.0, 0.0})
+    iex> {:contact_manifold, {{:contact_point, cp1, cp1d}, {:contact_point, cp2, cp2d}}, cmn} = CapsuleCapsule.check(a,b)
+    iex> Float.round(cp1d, 3) == 0.00
+    true
+    iex> Float.round(cp2d, 3) == 0.00
+    true
+    iex> Graphmath.Vec3.equal(cp1, {0.0, 1.0, -1.0}, 1.0e-6)
+    true
+    iex> Graphmath.Vec3.equal(cp2, {0.0, 1.0, 1.0}, 1.0e-6)
+    true
+    iex> Graphmath.Vec3.equal(cmn, {0.0, -1.0, 0.0}, 1.0e-6)
     true
 
+    iex> # IO.puts("Check deeper stacking")
+    iex> alias ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule
+    iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+    iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
+    iex> a = Body.body( shape: Capsule.capsule(axial_length: 2.0, cap_radius: 1.0), position: {1.5, 0.0, 0.0})
+    iex> b = Body.body( shape: Capsule.capsule(axial_length: 2.0, cap_radius: 1.0), position: {0.0, 0.0, 0.0})
+    iex> CapsuleCapsule.check(a,b)
+    {:contact_manifold, {{:contact_point, {0.75, -1.0, 0.0}, 0.5}, {:contact_point, {0.75, 1.0, 0.0}, 0.5}}, {-1.0, 0.0, 0.0}}
   """
   def check(
         Body.body(
@@ -199,18 +224,23 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
             # The latter two cases will require 2 contact points, the former only one.
 
             # get the planes for the "interior" of capsule 1
-            a_21_axis = a_axis
-            a_12_axis = Vec3.scale(a_axis, -1.0)
+            a_21_axis = Vec3.scale(a_axis, -1.0)
+            a_12_axis = a_axis
             a_plane_1 = Plane.create(a_12_axis, capsule_world_a_1)
             a_plane_2 = Plane.create(a_21_axis, capsule_world_a_2)
+            IO.inspect( a_plane_1, label: "a_plane_1")
+            IO.inspect( a_plane_2, label: "a_plane_2")
 
             # we're gonna check to see if the capsule spines are entirely disjoint
 
             # if both points are in front of one plane and behind another, capsule b is abutted
             cwb1_to_ap1_dist = Plane.distance_to_point(a_plane_1, capsule_world_b_1)
-            cwb1_to_ap2_dist = Plane.distance_to_point(a_plane_2, capsule_world_b_1)
             cwb2_to_ap1_dist = Plane.distance_to_point(a_plane_1, capsule_world_b_2)
+            cwb1_to_ap2_dist = Plane.distance_to_point(a_plane_2, capsule_world_b_1)
             cwb2_to_ap2_dist = Plane.distance_to_point(a_plane_2, capsule_world_b_2)
+
+            IO.inspect({cwb1_to_ap1_dist, cwb1_to_ap2_dist}, label: "cwb1")
+            IO.inspect({cwb2_to_ap1_dist, cwb2_to_ap2_dist}, label: "cwb2")
 
             if (cwb1_to_ap1_dist < 0 and cwb2_to_ap1_dist < 0) or
                  (cwb1_to_ap2_dist < 0 and cwb2_to_ap2_dist < 0) do
@@ -251,12 +281,16 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
               IO.inspect({clipped_nearest_1, clipped_nearest_2}, label: "b clipped")
               IO.inspect(direction, label: "direction")
 
-              dir_clipped_1 = Vec3.subtract(clipped_nearest_1, capsule_world_a_1)
-              dir_clipped_2 = Vec3.subtract(clipped_nearest_2, capsule_world_a_2)
-              IO.inspect( dir_clipped_1, label: "dir_clipped_1")
-              IO.inspect( dir_clipped_2, label: "dir_clipped_2")
-              distance_clipped_1 = dir_clipped_1 |> Vec3.length()
-              distance_clipped_2 = dir_clipped_2 |> Vec3.length()
+              #dir_clipped_1 = Vec3.subtract(clipped_nearest_1, capsule_world_a_1)
+              #dir_clipped_2 = Vec3.subtract(clipped_nearest_2, capsule_world_a_2)
+              #IO.inspect( dir_clipped_1, label: "dir_clipped_1")
+              #IO.inspect( dir_clipped_2, label: "dir_clipped_2")
+              #distance_clipped_1 = dir_clipped_1 |> Vec3.length()
+              #distance_clipped_2 = dir_clipped_2 |> Vec3.length()
+
+              distance_clipped_1 = a_to_b_dist
+              distance_clipped_2 = a_to_b_dist
+
 
               overlap1 = distance_clipped_1 - min_distance
               overlap2 = distance_clipped_2 - min_distance
