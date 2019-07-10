@@ -228,19 +228,13 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
             a_12_axis = a_axis
             a_plane_1 = Plane.create(a_12_axis, capsule_world_a_1)
             a_plane_2 = Plane.create(a_21_axis, capsule_world_a_2)
-            IO.inspect( a_plane_1, label: "a_plane_1")
-            IO.inspect( a_plane_2, label: "a_plane_2")
 
             # we're gonna check to see if the capsule spines are entirely disjoint
-
             # if both points are in front of one plane and behind another, capsule b is abutted
             cwb1_to_ap1_dist = Plane.distance_to_point(a_plane_1, capsule_world_b_1)
             cwb2_to_ap1_dist = Plane.distance_to_point(a_plane_1, capsule_world_b_2)
             cwb1_to_ap2_dist = Plane.distance_to_point(a_plane_2, capsule_world_b_1)
             cwb2_to_ap2_dist = Plane.distance_to_point(a_plane_2, capsule_world_b_2)
-
-            IO.inspect({cwb1_to_ap1_dist, cwb1_to_ap2_dist}, label: "cwb1")
-            IO.inspect({cwb2_to_ap1_dist, cwb2_to_ap2_dist}, label: "cwb2")
 
             if (cwb1_to_ap1_dist < 0 and cwb2_to_ap1_dist < 0) or
                  (cwb1_to_ap2_dist < 0 and cwb2_to_ap2_dist < 0) do
@@ -260,7 +254,6 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
                 world_normal: direction
               )
             else
-              IO.puts("stacked capsule")
               # clip spine of secondary shape to primary shape (note a-axis points inwards)
               # this works because the spines are parallel, and the closest point on line is on the plane normal to the spine
               clipped_nearest_1 =
@@ -276,43 +269,26 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
                   capsule_world_b_1,
                   capsule_world_b_2
                 )
-              IO.inspect({capsule_world_a_1, capsule_world_a_2}, label: "a spine" )
-              IO.inspect({capsule_world_b_1, capsule_world_b_2}, label: "b spine" )
-              IO.inspect({clipped_nearest_1, clipped_nearest_2}, label: "b clipped")
-              IO.inspect(direction, label: "direction")
 
-              #dir_clipped_1 = Vec3.subtract(clipped_nearest_1, capsule_world_a_1)
-              #dir_clipped_2 = Vec3.subtract(clipped_nearest_2, capsule_world_a_2)
-              #IO.inspect( dir_clipped_1, label: "dir_clipped_1")
-              #IO.inspect( dir_clipped_2, label: "dir_clipped_2")
-              #distance_clipped_1 = dir_clipped_1 |> Vec3.length()
-              #distance_clipped_2 = dir_clipped_2 |> Vec3.length()
-
-              distance_clipped_1 = a_to_b_dist
-              distance_clipped_2 = a_to_b_dist
-
-
-              overlap1 = distance_clipped_1 - min_distance
-              overlap2 = distance_clipped_2 - min_distance
-              penetration_depth1 = abs(overlap1)
-              penetration_depth2 = abs(overlap2)
-              IO.inspect( {penetration_depth1, penetration_depth2}, label: "penetration depth")
+              distance_clipped = a_to_b_dist
+              overlap = distance_clipped - min_distance
+              penetration_depth = abs(overlap)
 
               ContactManifold.contact_manifold(
                 contacts:
                   {ContactPoint.contact_point(
                      world_point:
                      direction
-                       |> Vec3.scale(-(cr_a - penetration_depth1 / 2))
+                       |> Vec3.scale(-(cr_a - penetration_depth / 2))
                        |> Vec3.add(clipped_nearest_1),
-                     depth: penetration_depth1
+                     depth: penetration_depth
                    ),
                    ContactPoint.contact_point(
                      world_point:
                      direction
-                       |> Vec3.scale(-(cr_a - penetration_depth2 / 2))
+                       |> Vec3.scale(-(cr_a - penetration_depth / 2))
                        |> Vec3.add(clipped_nearest_2),
-                     depth: penetration_depth2
+                     depth: penetration_depth
                    )},
                 world_normal: direction
               )
