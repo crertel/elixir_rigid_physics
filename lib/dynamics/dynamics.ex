@@ -25,19 +25,19 @@ defmodule ElixirRigidPhysics.Dynamics do
 
     maybe_colliding_pairs = Broadphase.generate_potential_colliding_pairs(acc_struct)
 
+    IO.inspect(maybe_colliding_pairs, label: "MAYBE COLLIDING PAIRS")
 
-    IO.inspect( maybe_colliding_pairs, label: "MAYBE COLLIDING PAIRS")
+    collisions =
+      maybe_colliding_pairs
+      |> Enum.reduce([], fn {{_a_ref, a_body, _a_aabb}, {_b_ref, b_body, _b_aabb}}, acc ->
+        case Narrowphase.test_intersection(a_body, b_body) do
+          :coincident -> acc
+          :no_intersection -> acc
+          manifold -> [manifold | acc]
+        end
+      end)
 
-    collisions = maybe_colliding_pairs
-                  |> Enum.reduce([], fn({{_a_ref, a_body, _a_aabb}, {_b_ref, b_body, _b_aabb}}, acc) ->
-                    case Narrowphase.test_intersection(a_body, b_body) do
-                      :coincident -> acc
-                      :no_intersection -> acc
-                      manifold -> [manifold | acc]
-                    end
-                  end)
-
-    IO.inspect( collisions, label: "COLLIDING PAIRS")
+    IO.inspect(collisions, label: "COLLIDING PAIRS")
 
     new_bodies =
       for {r,

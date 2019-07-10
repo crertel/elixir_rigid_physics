@@ -117,7 +117,7 @@ defmodule ElixirRigidPhysics.Geometry.Util do
     true
 
   """
-  def nearest_points_for_segments( {p0, p1}, {q0, q1} ) do
+  def nearest_points_for_segments({p0, p1}, {q0, q1}) do
     p1_to_p0 = Vec3.subtract(p1, p0)
     q1_to_q0 = Vec3.subtract(q1, q0)
     p0_to_q0 = Vec3.subtract(p0, q0)
@@ -139,67 +139,95 @@ defmodule ElixirRigidPhysics.Geometry.Util do
     g11 = g10 + c
 
     # check for segment degeneracy
-    {s,t} = cond do
+    {s, t} =
+      cond do
         a > 0.0 and c > 0.0 ->
           # both segments are valid
 
           s_value_0 = get_clamped_root(a, f00, f10)
           s_value_1 = get_clamped_root(a, f01, f11)
 
-          classify_0 = cond do
-            s_value_0 <= 0.0 -> -1.0
-            s_value_0 >= 1.0 -> 1.0
-            true -> 0.0
-          end
+          classify_0 =
+            cond do
+              s_value_0 <= 0.0 -> -1.0
+              s_value_0 >= 1.0 -> 1.0
+              true -> 0.0
+            end
 
-          classify_1 = cond do
-            s_value_1 <= 0.0 -> -1.0
-            s_value_1 >= 1.0 -> 1.0
-            true -> 0.0
-          end
+          classify_1 =
+            cond do
+              s_value_1 <= 0.0 -> -1.0
+              s_value_1 >= 1.0 -> 1.0
+              true -> 0.0
+            end
 
           cond do
-            classify_0 == -1.0 and classify_1 == -1.0 -> {0.0, get_clamped_root(c, g00, g01)}
-            classify_0 == 1.0 and classify_1 == 1.0 -> {1.0, get_clamped_root(c, g10, g11) }
+            classify_0 == -1.0 and classify_1 == -1.0 ->
+              {0.0, get_clamped_root(c, g00, g01)}
+
+            classify_0 == 1.0 and classify_1 == 1.0 ->
+              {1.0, get_clamped_root(c, g10, g11)}
+
             true ->
-              r_coeffs = {a,b,c,d,e}
-              g = {g00,g01,g10,g11}
-              {edges, ends} = compute_intersection({s_value_0, s_value_1}, {classify_0, classify_1}, b, f00, f10)
+              r_coeffs = {a, b, c, d, e}
+              g = {g00, g01, g10, g11}
+
+              {edges, ends} =
+                compute_intersection(
+                  {s_value_0, s_value_1},
+                  {classify_0, classify_1},
+                  b,
+                  f00,
+                  f10
+                )
+
               compute_minimum_parameters(edges, ends, r_coeffs, g)
           end
 
-        a > 0.0 -> {get_clamped_root(a, f00, f10), 0.0} # q segment is degenerate
-        c > 0.0 -> {0.0, get_clamped_root(c, g00, g01)} # p segment is degenerate
-        true -> {0.0, 0.0} # both segments are degenerate!
-    end
+        # q segment is degenerate
+        a > 0.0 ->
+          {get_clamped_root(a, f00, f10), 0.0}
 
-    p_nearest = Vec3.lerp(p0,p1,s)
-    q_nearest = Vec3.lerp(q0,q1,t)
+        # p segment is degenerate
+        c > 0.0 ->
+          {0.0, get_clamped_root(c, g00, g01)}
+
+        # both segments are degenerate!
+        true ->
+          {0.0, 0.0}
+      end
+
+    p_nearest = Vec3.lerp(p0, p1, s)
+    q_nearest = Vec3.lerp(q0, q1, t)
     distance = Vec3.subtract(p_nearest, q_nearest) |> Vec3.length()
 
     {distance, p_nearest, q_nearest}
   end
 
-  @spec compute_intersection({ number, number}, {number, number}, number, number, number) :: { {number,number}, {number,number, number, number}}
-  defp compute_intersection( {s_value_0, s_value_1}, {classify_0, classify_1}, b, f00,f10) do
+  @spec compute_intersection({number, number}, {number, number}, number, number, number) ::
+          {{number, number}, {number, number, number, number}}
+  defp compute_intersection({s_value_0, s_value_1}, {classify_0, classify_1}, b, f00, f10) do
     cond do
       classify_0 < 0.0 ->
         edge_0 = 0
         end_00 = 0.0
         end_01 = if b == 0.0, do: 0.5, else: f00 / b
         end_01 = if end_01 < 0.0 or end_01 > 1.0, do: 0.5, else: end_01
-        {edge_1, end_10, end_11} = if classify_1 == 0 do
-          edge_1 = 3
-          end_10  = s_value_1
-          end_11 = 1.0
-          {edge_1, end_10, end_11}
-        else
-          edge_1 = 1
-          end_10 = 1.0
-          end_11 = if b == 0.0, do: 0.5, else: f10 / b
-          end_11 = if end_11 < 0.0 or end_11 > 1.0, do: 0.5, else: end_11
-          {edge_1, end_10, end_11}
-        end
+
+        {edge_1, end_10, end_11} =
+          if classify_1 == 0 do
+            edge_1 = 3
+            end_10 = s_value_1
+            end_11 = 1.0
+            {edge_1, end_10, end_11}
+          else
+            edge_1 = 1
+            end_10 = 1.0
+            end_11 = if b == 0.0, do: 0.5, else: f10 / b
+            end_11 = if end_11 < 0.0 or end_11 > 1.0, do: 0.5, else: end_11
+            {edge_1, end_10, end_11}
+          end
+
         {{edge_0, edge_1}, {end_00, end_01, end_10, end_11}}
 
       classify_0 == 0.0 ->
@@ -207,22 +235,26 @@ defmodule ElixirRigidPhysics.Geometry.Util do
         end_00 = s_value_0
         end_01 = 0.0
 
-        {edge_1, end_10, end_11} = cond do
-          classify_1 < 0.0 ->
-            edge_1 = 0
-            end_10 = 0.0
-            end_11 = if b == 0.0, do: 0.5, else: f00 / b
-            end_11 = if end_11 < 0.0 or end_11 > 1.0, do: 0.5, else: end_11
-            {edge_1, end_10, end_11}
-          classify_1 == 0.0 ->
-            {3, s_value_1, 1.0}
-          true ->
-            edge_1 = 1
-            end_10 = 1.0
-            end_11 = if b == 0.0, do: 0.5, else: f10 / b
-            end_11 = if end_11 < 0.0 or end_11 > 1.0, do: 0.5, else: end_11
-            {edge_1, end_10, end_11}
-        end
+        {edge_1, end_10, end_11} =
+          cond do
+            classify_1 < 0.0 ->
+              edge_1 = 0
+              end_10 = 0.0
+              end_11 = if b == 0.0, do: 0.5, else: f00 / b
+              end_11 = if end_11 < 0.0 or end_11 > 1.0, do: 0.5, else: end_11
+              {edge_1, end_10, end_11}
+
+            classify_1 == 0.0 ->
+              {3, s_value_1, 1.0}
+
+            true ->
+              edge_1 = 1
+              end_10 = 1.0
+              end_11 = if b == 0.0, do: 0.5, else: f10 / b
+              end_11 = if end_11 < 0.0 or end_11 > 1.0, do: 0.5, else: end_11
+              {edge_1, end_10, end_11}
+          end
+
         {{edge_0, edge_1}, {end_00, end_01, end_10, end_11}}
 
       true ->
@@ -231,23 +263,36 @@ defmodule ElixirRigidPhysics.Geometry.Util do
         end_01 = if b == 0.0, do: 0.5, else: f10 / b
         end_01 = if end_01 < 0.0 or end_01 > 1.0, do: 0.5, else: end_01
 
-        {edge_1, end_10, end_11} = if classify_1 == 0.0 do
-          {3, s_value_1, 1.0}
-        else
-          end_1 = 0
-          end_10 = 0.0
-          end_11 = if b == 0.0, do: 0.5, else: f00 / b
-          end_11 = if end_11 < 0.0 or end_11 > 1.0, do: 0.5, else: end_11
-          {end_1, end_10, end_11}
-        end
+        {edge_1, end_10, end_11} =
+          if classify_1 == 0.0 do
+            {3, s_value_1, 1.0}
+          else
+            end_1 = 0
+            end_10 = 0.0
+            end_11 = if b == 0.0, do: 0.5, else: f00 / b
+            end_11 = if end_11 < 0.0 or end_11 > 1.0, do: 0.5, else: end_11
+            {end_1, end_10, end_11}
+          end
+
         {{edge_0, edge_1}, {end_00, end_01, end_10, end_11}}
     end
   end
 
-  @spec compute_minimum_parameters({number, number}, {number, number, number,number}, {number, number, number, number, number}, {number, number, number, number}) :: {number, number}
-  defp compute_minimum_parameters({edge_0, edge_1}, {end_00, end_01, end_10, end_11}, {_a,b,c,_d,e}, {g00,g01,g10,g11}) do
+  @spec compute_minimum_parameters(
+          {number, number},
+          {number, number, number, number},
+          {number, number, number, number, number},
+          {number, number, number, number}
+        ) :: {number, number}
+  defp compute_minimum_parameters(
+         {edge_0, edge_1},
+         {end_00, end_01, end_10, end_11},
+         {_a, b, c, _d, e},
+         {g00, g01, g10, g11}
+       ) do
     delta = end_11 - end_01
-    h0 = delta * ((-b*end_00) + (c*end_01) - e)
+    h0 = delta * (-b * end_00 + c * end_01 - e)
+
     if h0 >= 0.0 do
       case edge_0 do
         0 -> {0.0, get_clamped_root(c, g00, g01)}
@@ -255,7 +300,8 @@ defmodule ElixirRigidPhysics.Geometry.Util do
         _ -> {end_00, end_01}
       end
     else
-      h1 = delta * ((-b*end_10) + (c*end_11) - e)
+      h1 = delta * (-b * end_10 + c * end_11 - e)
+
       if h1 <= 0.0 do
         case edge_1 do
           0 -> {0.0, get_clamped_root(c, g00, g01)}
@@ -263,13 +309,12 @@ defmodule ElixirRigidPhysics.Geometry.Util do
           _ -> {end_10, end_11}
         end
       else
-        z = min( max( h0 /( h0-h1), 0.0), 1.0)
+        z = min(max(h0 / (h0 - h1), 0.0), 1.0)
         omz = 1.0 - z
-        { (omz*end_00) + (z*end_10), (omz * end_01) + (z*end_11) }
+        {omz * end_00 + z * end_10, omz * end_01 + z * end_11}
       end
     end
   end
-
 
   @doc """
   Gets the root `z` of the linear function `h(z) = h(0) + sigma * z` on the interval [0,1], or the clamped root to the interval [0,1].
@@ -300,15 +345,25 @@ defmodule ElixirRigidPhysics.Geometry.Util do
   @spec get_clamped_root(number(), number(), number()) :: number()
   def get_clamped_root(sigma, h0, h1) do
     cond do
-      h0 >= 0.0 -> 0.0
-      h1 <= 0 -> 1.0
-      sigma == 0.0 -> 0.5 # add check because original C++ code -h0/0 -> infinity, but in Elixir would throw
-      true -> root = -h0 / sigma # Eberly suggests that this can be replaced with a bisection routine for `h(z)`, but that's slow
-              if root > 1 do
-                0.5
-              else
-                root
-              end
+      h0 >= 0.0 ->
+        0.0
+
+      h1 <= 0 ->
+        1.0
+
+      # add check because original C++ code -h0/0 -> infinity, but in Elixir would throw
+      sigma == 0.0 ->
+        0.5
+
+      # Eberly suggests that this can be replaced with a bisection routine for `h(z)`, but that's slow
+      true ->
+        root = -h0 / sigma
+
+        if root > 1 do
+          0.5
+        else
+          root
+        end
     end
   end
 end

@@ -28,9 +28,9 @@ defmodule ElixirRigidPhysics.Geometry.Plane do
     iex> Plane.create( {0.0, 1.0, 0.0}, {0.0, 1.0, 0.0})
     {:plane, 0.0, 1.0, 0.0, -1.0}
   """
-  @spec create( Vec3.vec3, Vec3.vec3) :: plane
-  def create( {nx, ny, nz} = _normal, {px, py, pz} = _point ) do
-    d = -( (nx*px) + (ny*py) + (nz*pz) )
+  @spec create(Vec3.vec3(), Vec3.vec3()) :: plane
+  def create({nx, ny, nz} = _normal, {px, py, pz} = _point) do
+    d = -(nx * px + ny * py + nz * pz)
     plane(a: nx, b: ny, c: nz, d: d)
   end
 
@@ -63,9 +63,9 @@ defmodule ElixirRigidPhysics.Geometry.Plane do
     0.0
 
   """
-  @spec distance_to_point(plane, Vec3.vec3) :: float()
-  def distance_to_point( plane(a: a, b: b, c: c, d: d) = _plane, {px, py, pz} = _point) do
-    1.0 * ((a*px) + (b*py) + (c*pz) + d)
+  @spec distance_to_point(plane, Vec3.vec3()) :: float()
+  def distance_to_point(plane(a: a, b: b, c: c, d: d) = _plane, {px, py, pz} = _point) do
+    1.0 * (a * px + b * py + c * pz + d)
   end
 
   @doc """
@@ -90,10 +90,10 @@ defmodule ElixirRigidPhysics.Geometry.Plane do
     iex> Plane.project_point_to_plane(p, {44.0,22.0, -43.0})
     {44.0, 22.0, 3.0}
   """
-  def project_point_to_plane( plane(a: a, b: b, c: c, d: d) = _plane, {px, py, pz} = point) do
-    distance = 1.0 * ((a*px) + (b*py) + (c*pz) + d)
+  def project_point_to_plane(plane(a: a, b: b, c: c, d: d) = _plane, {px, py, pz} = point) do
+    distance = 1.0 * (a * px + b * py + c * pz + d)
 
-    Vec3.scale({a,b,c}, -distance)
+    Vec3.scale({a, b, c}, -distance)
     |> Vec3.add(point)
   end
 
@@ -122,14 +122,14 @@ defmodule ElixirRigidPhysics.Geometry.Plane do
     iex> Plane.clip_point(p, point)
     {24.0, 4.0, 3.0}
   """
-  def clip_point( plane(a: a, b: b, c: c, d: d), {px, py, pz} = point) do
-    distance = 1.0 * ((a*px) + (b*py) + (c*pz) + d)
+  def clip_point(plane(a: a, b: b, c: c, d: d), {px, py, pz} = point) do
+    distance = 1.0 * (a * px + b * py + c * pz + d)
 
     if distance >= @verysmol do
       point
     else
       # we're behind it, must project onto plane.
-      Vec3.scale({a,b,c}, -distance)
+      Vec3.scale({a, b, c}, -distance)
       |> Vec3.add(point)
     end
   end
