@@ -4,4 +4,5 @@ defmodule ElixirRigidPhysicsTest.GeometryTest do
   doctest ElixirRigidPhysics.Geometry.Capsule
   doctest ElixirRigidPhysics.Geometry.Sphere
   doctest ElixirRigidPhysics.Geometry.Util
+  doctest ElixirRigidPhysics.Geometry.Plane
 end

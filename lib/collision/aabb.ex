@@ -226,8 +226,11 @@ defmodule ElixirRigidPhysics.Collision.AABB do
         aabb(min: {aminx, aminy, aminz}, max: {amaxx, amaxy, amaxz}),
         aabb(min: {bminx, bminy, bminz}, max: {bmaxx, bmaxy, bmaxz})
       ) do
-    ((bminx <= amaxx and amaxx <= bmaxx) or (aminx <= bmaxx and bmaxx <= aminx)) and
-      ((bminy <= amaxy and amaxy <= bmaxy) or (aminy <= bmaxy and bmaxy <= aminy)) and
-      ((bminz <= amaxz and amaxz <= bmaxz) or (aminz <= bmaxz and bmaxz <= aminz))
+    cond do
+      amaxx < bminx or aminx > bmaxx -> false
+      amaxy < bminy or aminy > bmaxy -> false
+      amaxz < bminz or aminz > bmaxz -> false
+      true -> true
+    end
   end
 end

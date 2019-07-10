@@ -4,6 +4,7 @@ defmodule ElixirRigidPhysics.Dynamics do
   """
   alias ElixirRigidPhysics.World
   alias ElixirRigidPhysics.Collision.Broadphase
+  alias ElixirRigidPhysics.Collision.Narrowphase
 
   alias Graphmath.Vec3
   alias Graphmath.Quatern
@@ -22,7 +23,21 @@ defmodule ElixirRigidPhysics.Dynamics do
 
     acc_struct = Broadphase.populate_acceleration_structure_from_bodies(old_acc_struct, bodies)
 
-    # IO.inspect(Broadphase.generate_potential_colliding_pairs(acc_struct))
+    maybe_colliding_pairs = Broadphase.generate_potential_colliding_pairs(acc_struct)
+
+    IO.inspect(maybe_colliding_pairs, label: "MAYBE COLLIDING PAIRS")
+
+    collisions =
+      maybe_colliding_pairs
+      |> Enum.reduce([], fn {{_a_ref, a_body, _a_aabb}, {_b_ref, b_body, _b_aabb}}, acc ->
+        case Narrowphase.test_intersection(a_body, b_body) do
+          :coincident -> acc
+          :no_intersection -> acc
+          manifold -> [manifold | acc]
+        end
+      end)
+
+    IO.inspect(collisions, label: "COLLIDING PAIRS")
 
     new_bodies =
       for {r,
@@ -49,7 +64,8 @@ defmodule ElixirRigidPhysics.Dynamics do
       | timestep: timestep + 1,
         current_time: current_time + dt,
         bodies: new_bodies,
-        broadphase_acceleration_structure: acc_struct
+        broadphase_acceleration_structure: acc_struct,
+        collisions: collisions
     }
   end
 end
