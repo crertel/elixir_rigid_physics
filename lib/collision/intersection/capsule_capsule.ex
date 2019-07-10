@@ -53,7 +53,16 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
     iex> a = Body.body( shape: Capsule.capsule(axial_length: 3.0, cap_radius: 0.5), position: {0.0, 0.0, 0.0})
     iex> b = Body.body( shape: Capsule.capsule(axial_length: 2.0, cap_radius: 1.0), position: {0.0, 4.0, 0.0})
     iex> CapsuleCapsule.check(a,b)
-    {:contact_manifold, {{:contact_point, {0.0, 2.0, 0.0}, 14.0}}, {0.0, 1.0, 0.0}}
+    {:contact_manifold, {{:contact_point, {0.0, 2.0, 0.0}, 0.0}}, {0.0, 1.0, 0.0}}
+
+    iex> # Check penetrating grazing cap contact
+    iex> alias ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule
+    iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+    iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
+    iex> a = Body.body( shape: Capsule.capsule(axial_length: 3.0, cap_radius: 0.5), position: {0.0, 0.0, 0.0})
+    iex> b = Body.body( shape: Capsule.capsule(axial_length: 2.0, cap_radius: 1.0), position: {0.0, 3.75, 0.0})
+    iex> CapsuleCapsule.check(a,b)
+    {:contact_manifold, {{:contact_point, {0.0, 1.875, 0.0}, 0.25}}, {0.0, 1.0, 0.0}}
 
     iex> # Check penetrating side contact
     iex> alias ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule
@@ -68,6 +77,25 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
     iex> {:contact_manifold, {{:contact_point, {0.0, 0.0, 2.75}, d}}, {0.0, 0.0, -1.0}} = res
     iex> Float.round(d,2) == 0.5
     true
+
+    iex> # Check stacking
+    iex> alias ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule
+    iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+    iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
+    iex> a = Body.body( shape: Capsule.capsule(axial_length: 2.0, cap_radius: 1.0), position: {2.0, 0.0, 0.0})
+    iex> b = Body.body( shape: Capsule.capsule(axial_length: 2.0, cap_radius: 1.0), position: {0.0, 0.0, 0.0})
+    iex> CapsuleCapsule.check(a,b)
+    {:contact_manifold, {{:contact_point, {1.0, -1.0, 0.0}, 0.0}, {:contact_point, {1.0, 1.0, 0.0}, 0.0}}, {-1.0, 0.0, 0.0}}
+
+    iex> # Check stacking of transformed capsules
+    iex> alias ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule
+    iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+    iex> require ElixirRigidPhysics.Dynamics.Body, as: Body
+    iex> sqrthalf = :math.sqrt(0.5)
+    iex> a = Body.body( shape: Capsule.capsule(axial_length: 2.0, cap_radius: 1.0), position: {0.0, 2.0, 0.0}, orientation: {sqrthalf, sqrthalf, 0.0, 0.0})
+    iex> b = Body.body( shape: Capsule.capsule(axial_length: 4.0, cap_radius: 1.0), position: {0.0, 0.0, 0.0}, orientation: {sqrthalf, sqrthalf, 0.0, 0.0})
+    iex> CapsuleCapsule.check(a,b)
+    {:contact_manifold, {{:contact_point, {0.0, 1.0, -1.0}, 0.0}, {:contact_point, {0.0, 1.0, 1.0}, 0.0}}, {0.0, -1.0, 0.0}}
   """
   def check(
         Body.body(shape: Capsule.capsule(cap_radius: cr_a) = cap_a, position: p_a, orientation: o_a),
@@ -131,34 +159,67 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
                 world_normal: direction
               )
             else
-              # parallel (stacked!) capsules, 2 contact points
+              IO.puts "parallel capsule!"
+              # capsules spines are parallel!
+              # HOWEVER, we don't know if the capsules are butting up against each other,
+              # if the second capsule is entirely "within" the first capsule's axis,
+              # or if there is a partial overlap.
+              # The latter two cases will require 2 contact points, the former only one.
 
-              # clip spine of secondary shape to primary shape (note a-axis points inwards)
+              # get the planes for the "interior" of capsule 1
               a_21_axis = a_axis
               a_12_axis = Vec3.scale(a_axis, -1.0)
               a_plane_1 = Plane.create(a_12_axis, capsule_world_a_1)
               a_plane_2 = Plane.create(a_21_axis, capsule_world_a_2)
 
+              # we're gonna check to see if the capsule spines are entirely disjoint
+
+              # if both points are in front of one plane and behind another, capsule b is abutted
+              cwb1_to_ap1_dist = Plane.distance_to_point(a_plane_1, capsule_world_b_1)
+              cwb1_to_ap2_dist = Plane.distance_to_point(a_plane_2, capsule_world_b_1)
+              cwb2_to_ap1_dist = Plane.distance_to_point(a_plane_1, capsule_world_b_2)
+              cwb2_to_ap2_dist = Plane.distance_to_point(a_plane_2, capsule_world_b_2)
+
+              if (cwb1_to_ap1_dist < 0 and cwb2_to_ap1_dist < 0) or (cwb1_to_ap2_dist < 0 and cwb2_to_ap2_dist < 0) do
+                IO.puts "abutting capsule"
+                # capsule b is abutting capsule a
+                a_to_b = Vec3.subtract(cap_b_nearest, cap_a_nearest)
+                a_to_b_dist = Vec3.length(a_to_b)
+                overlap = a_to_b_dist - (min_distance)
+                penetration_depth = abs(overlap)
+                direction = Vec3.normalize(a_to_b)
+
+                ContactManifold.contact_manifold(
+                  contacts:
+                    {ContactPoint.contact_point(
+                      world_point: direction |> Vec3.scale(cr_a - penetration_depth / 2) |> Vec3.add(cap_a_nearest),
+                      depth: penetration_depth
+                    )},
+                  world_normal: direction
+                )
+
+              else
+                IO.puts "stacked capsule"
+              # clip spine of secondary shape to primary shape (note a-axis points inwards)
               half_clipped_b_1 = Plane.clip_point(a_plane_1, capsule_world_b_1)
               half_clipped_b_2 = Plane.clip_point(a_plane_2, capsule_world_b_2)
               clipped_b_1 = Plane.clip_point(a_plane_1, half_clipped_b_1)
               clipped_b_2 = Plane.clip_point(a_plane_2, half_clipped_b_2)
 
-              clipped_nearest_1 = GUtil.closest_point_on_line_to_point(clipped_b_1, capsule_world_a_1, capsule_world_a_2)
-              clipped_nearest_2 = GUtil.closest_point_on_line_to_point(clipped_b_2, capsule_world_a_1, capsule_world_a_2)
-              dir_clipped_1 = Vec3.subtract(clipped_nearest_1, clipped_b_1)
-              dir_clipped_2 = Vec3.subtract(clipped_nearest_2, clipped_b_2)
+              clipped_nearest_1 = GUtil.closest_point_on_line_to_point(clipped_a_1, capsule_world_b_1, capsule_world_b_2)
+              clipped_nearest_2 = GUtil.closest_point_on_line_to_point(clipped_a_2, capsule_world_b_1, capsule_world_b_2)
+              dir_clipped_1 = Vec3.subtract(clipped_b_1, clipped_nearest_1)
+              dir_clipped_2 = Vec3.subtract(clipped_b_2, clipped_nearest_2)
               distance_clipped_1 = dir_clipped_1 |> Vec3.length()
               distance_clipped_2 = dir_clipped_2 |> Vec3.length()
 
-              cond do
-                distance_clipped_1 <= min_distance and distance_clipped_2 <= min_distance ->
                   overlap1 = distance_clipped_1 - (min_distance)
                   overlap2 = distance_clipped_2 - (min_distance)
                   penetration_depth1 = abs(overlap1)
                   penetration_depth2 = abs(overlap2)
                   ndir_clipped_1 = Vec3.normalize(dir_clipped_1)
                   ndir_clipped_2 = Vec3.normalize(dir_clipped_2)
+                  IO.inspect( {ndir_clipped_1, ndir_clipped_2}, label: "hwat")
 
                   ContactManifold.contact_manifold(
                   contacts:
@@ -169,33 +230,6 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
                     ContactPoint.contact_point(
                       world_point: ndir_clipped_2 |> Vec3.scale(cr_a - penetration_depth2 / 2) |> Vec3.add(clipped_nearest_2),
                       depth: penetration_depth2
-                    )},
-                  world_normal: ndir_clipped_1
-                )
-
-                distance_clipped_2 <= min_distance -> # 1 is out of distance, somehow
-                  overlap2 = distance_clipped_2 - (min_distance)
-                  penetration_depth2 = abs(overlap2)
-                  ndir_clipped_2 = Vec3.normalize(dir_clipped_2)
-                  ContactManifold.contact_manifold(
-                  contacts:
-                    {ContactPoint.contact_point(
-                      world_point: ndir_clipped_2 |> Vec3.scale(cr_a - penetration_depth2 / 2) |> Vec3.add(clipped_nearest_2),
-                      depth: penetration_depth2
-                    )},
-                  world_normal: ndir_clipped_2
-                )
-
-                distance_clipped_1 <= min_distance -> # 2 is out of distance, somehow
-                  overlap1 = distance_clipped_1 - (min_distance)
-                  penetration_depth1 = abs(overlap1)
-                  IO.inspect(dir_clipped_1, label: "ah")
-                  ndir_clipped_1 = Vec3.normalize(dir_clipped_1)
-                  ContactManifold.contact_manifold(
-                  contacts:
-                    {ContactPoint.contact_point(
-                      world_point: ndir_clipped_1 |> Vec3.scale(cr_a - penetration_depth1 / 2) |> Vec3.add(clipped_nearest_1),
-                      depth: penetration_depth1
                     )},
                   world_normal: ndir_clipped_1
                 )
