@@ -278,14 +278,14 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
                 contacts:
                   {ContactPoint.contact_point(
                      world_point:
-                     direction
+                       direction
                        |> Vec3.scale(-(cr_a - penetration_depth / 2))
                        |> Vec3.add(clipped_nearest_1),
                      depth: penetration_depth
                    ),
                    ContactPoint.contact_point(
                      world_point:
-                     direction
+                       direction
                        |> Vec3.scale(-(cr_a - penetration_depth / 2))
                        |> Vec3.add(clipped_nearest_2),
                      depth: penetration_depth

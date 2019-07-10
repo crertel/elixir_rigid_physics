@@ -5,4 +5,5 @@ defmodule ElixirRigidPhysicsTest.GeometryTest do
   doctest ElixirRigidPhysics.Geometry.Sphere
   doctest ElixirRigidPhysics.Geometry.Util
   doctest ElixirRigidPhysics.Geometry.Plane
+  doctest ElixirRigidPhysics.Geometry.Triangle
 end
