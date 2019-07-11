@@ -32,7 +32,7 @@ defmodule ElixirRigidPhysics.Collision.Broadphase do
         {ref, body, ElixirRigidPhysics.Collision.AABB.create_world_from_body(body)}
       end
 
-    IO.inspect(new_bodies, lavel: "ACC BODIES")
+    #IO.inspect(new_bodies, lavel: "ACC BODIES")
 
     broadphase_acc_struct(acc_struct,
       bodies: new_bodies
