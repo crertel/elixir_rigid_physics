@@ -114,9 +114,9 @@ defmodule ElixirRigidPhysics do
   @impl true
   def handle_cast({:step_world, opts}, s) do
     dt = Keyword.get(opts, :dt, @tick_rate / 1000)
-    new_world = ElixirRigidPhysics.Dynamics.step(sim(s, :world), dt)
+    {step_time, new_world} = :timer.tc( ElixirRigidPhysics.Dynamics, :step, [sim(s, :world), dt])
 
-    update_subscribers(sim(s, :subscribers), new_world)
+    update_subscribers(sim(s, :subscribers), %World{ new_world | last_step_usecs: step_time})
 
     {:noreply, sim(s, world: new_world)}
   end
@@ -196,10 +196,11 @@ defmodule ElixirRigidPhysics do
 
   @impl true
   def handle_info(:tick_simulation, s) do
-    new_world = ElixirRigidPhysics.Dynamics.step(sim(s, :world), @tick_rate / 1000)
+    {step_time, new_world} = :timer.tc( ElixirRigidPhysics.Dynamics, :step, [sim(s, :world), @tick_rate / 1000])
+    timed_world = %World{ new_world | last_step_usecs: step_time}
     thandle = Process.send_after(self(), :tick_simulation, @tick_rate)
-    update_subscribers(sim(s, :subscribers), new_world)
-    {:noreply, sim(s, world: new_world, next_tick: thandle)}
+    update_subscribers(sim(s, :subscribers), timed_world)
+    {:noreply, sim(s, world: timed_world, next_tick: thandle)}
   end
 
   @spec update_subscribers(MapSet.t(any), World.t()) :: :ok

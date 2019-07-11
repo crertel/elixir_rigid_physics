@@ -13,6 +13,10 @@ defmodule ElixirRigidPhysics.World do
             current_time: 0.0,
             timestep: 0,
             bodies: %{},
+            last_step_usecs: 0,
+            narrowphase_usecs: 0,
+            broadphase_usecs: 0,
+            acc_struct_pop_usecs: 0,
             broadphase_acceleration_structure:
               ElixirRigidPhysics.Collision.Broadphase.create_acceleration_structure(),
             collisions: []
