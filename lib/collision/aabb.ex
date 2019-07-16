@@ -13,6 +13,7 @@ defmodule ElixirRigidPhysics.Collision.AABB do
   require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
   require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
   require ElixirRigidPhysics.Geometry.Box, as: Box
+  require ElixirRigidPhysics.Geometry.Hull, as: Hull
 
   alias Graphmath.Quatern
 
@@ -150,7 +151,6 @@ defmodule ElixirRigidPhysics.Collision.AABB do
 
   ## Examples
 
-
     iex> require ElixirRigidPhysics.Collision.AABB, as: AABB
     iex> require ElixirRigidPhysics.Geometry.Box, as: Box
     iex> AABB.create_local_from_shape( Box.box(width: 1.0, height: 2.0, depth: 3.0))
@@ -191,6 +191,27 @@ defmodule ElixirRigidPhysics.Collision.AABB do
       min: {-cr, -half_height, -cr},
       max: {cr, half_height, cr}
     )
+  end
+
+  def create_local_from_shape(Hull.hull(faces: faces)) do
+    {{minxp, minyp, minzp}, {maxxp, maxyp, maxzp}} =
+      faces
+      |> Enum.flat_map( fn( {a,b,c} ) -> [a,b,c] end)
+      |> Enum.reduce(
+        {{@near_infinite, @near_infinite, @near_infinite},
+         {-@near_infinite, -@near_infinite, -@near_infinite}},
+        fn {x, y, z}, {{minx, miny, minz}, {maxx, maxy, maxz}} ->
+          {
+            {min(x, minx), min(y, miny), min(z, minz)},
+            {max(x, maxx), max(y, maxy), max(z, maxz)}
+          }
+        end
+      )
+
+      aabb(
+        min: {minxp, minyp, minzp},
+        max: {maxxp, maxyp, maxzp}
+      )
   end
 
   @doc """
