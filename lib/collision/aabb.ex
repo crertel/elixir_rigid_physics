@@ -168,6 +168,15 @@ defmodule ElixirRigidPhysics.Collision.AABB do
     iex> AABB.create_local_from_shape( Capsule.capsule(axial_length: 4.0, cap_radius: 1.0))
     {:aabb, {-1.0, -3.0, -1.0}, {1.0, 3.0, 1.0}}
 
+    iex> require ElixirRigidPhysics.Collision.AABB, as: AABB
+    iex> require ElixirRigidPhysics.Geometry.Hull, as: Hull
+    iex> f1 = { {0,0,0}, {1,0,0}, {0,0,1}}
+    iex> f2 = { {0,0,0}, {1,0,0}, {0,1,0}}
+    iex> f3 = { {0,0,0}, {0,1,0}, {1,0,0}}
+    iex> f4 = { {0,0,1}, {0,1,0}, {1,0,0}}
+    iex> h = AABB.create_local_from_shape( Hull.hull(faces: [f1,f2,f3,f4]))
+    {:aabb, {0, 0, 0}, {1, 1, 1}}
+
   """
   @spec create_local_from_shape(Box.box() | Sphere.sphere() | Capsule.capsule()) :: aabb()
   def create_local_from_shape(Box.box(width: w, height: h, depth: d)) do
