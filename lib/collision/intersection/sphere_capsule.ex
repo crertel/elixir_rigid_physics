@@ -6,9 +6,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.SphereCapsule do
   require ElixirRigidPhysics.Dynamics.Body, as: Body
   require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
   require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
-  require ElixirRigidPhysics.Collision.ContactManifold, as: ContactManifold
-  require ElixirRigidPhysics.Collision.ContactPoint, as: ContactPoint
-  alias ElixirRigidPhysics.Collision.Narrowphase
+  require ElixirRigidPhysics.Collision.Contact, as: Contact
 
   alias ElixirRigidPhysics.Geometry.Util, as: GUtil
   alias Graphmath.Vec3
@@ -84,7 +82,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.SphereCapsule do
     iex> SphereCapsule.check(a,b)
     {:contact_manifold, {{:contact_point, {3.0, 0.0, 0.0}, 4.0}}, {-1.0, 0.0, 0.0}}
   """
-  @spec check(Body.body(), Body.body()) :: Narrowphase.contact_result
+  @spec check(Body.body(), Body.body()) :: Contact.contact_result
   def check(
         Body.body(shape: Sphere.sphere(radius: r_a), position: p_a),
         Body.body(shape: Capsule.capsule(cap_radius: cr_b) = c, position: p_b, orientation: o_b)
@@ -110,9 +108,9 @@ defmodule ElixirRigidPhysics.Collision.Intersection.SphereCapsule do
         penetration_depth = abs(overlap)
         direction = Vec3.normalize(vec_to_capsule)
 
-        ContactManifold.contact_manifold(
+        Contact.contact_manifold(
           contacts:
-            {ContactPoint.contact_point(
+            {Contact.contact_point(
                world_point: direction |> Vec3.scale(r_a - penetration_depth / 2) |> Vec3.add(p_a),
                depth: penetration_depth
              )},

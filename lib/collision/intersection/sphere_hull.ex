@@ -6,9 +6,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.SphereHull do
   require ElixirRigidPhysics.Dynamics.Body, as: Body
   require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
   require ElixirRigidPhysics.Geometry.Hull, as: Hull
-  require ElixirRigidPhysics.Collision.ContactManifold, as: ContactManifold
-  require ElixirRigidPhysics.Collision.ContactPoint, as: ContactPoint
-  alias ElixirRigidPhysics.Collision.Narrowphase
+  require ElixirRigidPhysics.Collision.Contact, as: Contact
   alias Graphmath.Vec3
 
   @verysmol 1.0e-12
@@ -16,7 +14,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.SphereHull do
   @doc """
   Tests intersections of two bodies.
   """
-  @spec check(Body.body(), Body.body()) :: Narrowphase.contact_result
+  @spec check(Body.body(), Body.body()) :: Contact.contact_result
   def check(
         Body.body(shape: Sphere.sphere(radius: r_a), position: p_a),
         Body.body(shape: Hull.hull(faces: faces), position: p_b, orientation: o_b)

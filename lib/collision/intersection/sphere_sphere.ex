@@ -5,9 +5,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.SphereSphere do
 
   require ElixirRigidPhysics.Dynamics.Body, as: Body
   require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
-  require ElixirRigidPhysics.Collision.ContactManifold, as: ContactManifold
-  require ElixirRigidPhysics.Collision.ContactPoint, as: ContactPoint
-  alias ElixirRigidPhysics.Collision.Narrowphase
+  require ElixirRigidPhysics.Collision.Contact, as: Contact
   alias Graphmath.Vec3
 
   @verysmol 1.0e-12
@@ -70,7 +68,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.SphereSphere do
     iex> SphereSphere.check(a,b)
     {:contact_manifold, {{:contact_point, {3.5, 0.0, 0.0}, 1.0}}, {1.0, 0.0, 0.0}}
   """
-  @spec check(Body.body(), Body.body()) :: Narrowphase.contact_result
+  @spec check(Body.body(), Body.body()) :: Contact.contact_result
   def check(
         Body.body(shape: Sphere.sphere(radius: r_a), position: p_a),
         Body.body(shape: Sphere.sphere(radius: r_b), position: p_b)
@@ -87,9 +85,9 @@ defmodule ElixirRigidPhysics.Collision.Intersection.SphereSphere do
         penetration_depth = abs(overlap)
         direction = Vec3.normalize(a_to_b)
 
-        ContactManifold.contact_manifold(
+        Contact.contact_manifold(
           contacts:
-            {ContactPoint.contact_point(
+            {Contact.contact_point(
                world_point: direction |> Vec3.scale(r_a - penetration_depth / 2) |> Vec3.add(p_a),
                depth: penetration_depth
              )},

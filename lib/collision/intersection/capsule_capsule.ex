@@ -5,9 +5,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
 
   require ElixirRigidPhysics.Dynamics.Body, as: Body
   require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
-  require ElixirRigidPhysics.Collision.ContactManifold, as: ContactManifold
-  require ElixirRigidPhysics.Collision.ContactPoint, as: ContactPoint
-  alias ElixirRigidPhysics.Collision.Narrowphase
+  require ElixirRigidPhysics.Collision.Contact, as: Contact
 
   alias ElixirRigidPhysics.Geometry.Util, as: GUtil
   alias ElixirRigidPhysics.Geometry.Plane, as: Plane
@@ -134,7 +132,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
     iex> CapsuleCapsule.check(a,b)
     {:contact_manifold, {{:contact_point, {0.75, -1.0, 0.0}, 0.5}, {:contact_point, {0.75, 1.0, 0.0}, 0.5}}, {-1.0, 0.0, 0.0}}
   """
-  @spec check(Body.body(), Body.body()) :: Narrowphase.contact_result
+  @spec check(Body.body(), Body.body()) :: Contact.contact_result
   def check(
         Body.body(
           shape: Capsule.capsule(cap_radius: cr_a) = cap_a,
@@ -184,9 +182,9 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
           penetration_depth = abs(overlap)
           direction = Vec3.normalize(a_to_b)
 
-          ContactManifold.contact_manifold(
+          Contact.contact_manifold(
             contacts:
-              {ContactPoint.contact_point(
+              {Contact.contact_point(
                  world_point:
                    direction |> Vec3.scale(cr_a - penetration_depth / 2) |> Vec3.add(p_a),
                  depth: penetration_depth
@@ -207,9 +205,9 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
             overlap = a_to_b_dist - min_distance
             penetration_depth = abs(overlap)
 
-            ContactManifold.contact_manifold(
+            Contact.contact_manifold(
               contacts:
-                {ContactPoint.contact_point(
+                {Contact.contact_point(
                    world_point:
                      direction
                      |> Vec3.scale(cr_a - penetration_depth / 2)
@@ -244,9 +242,9 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
               overlap = a_to_b_dist - min_distance
               penetration_depth = abs(overlap)
 
-              ContactManifold.contact_manifold(
+              Contact.contact_manifold(
                 contacts:
-                  {ContactPoint.contact_point(
+                  {Contact.contact_point(
                      world_point:
                        direction
                        |> Vec3.scale(cr_a - penetration_depth / 2)
@@ -276,16 +274,16 @@ defmodule ElixirRigidPhysics.Collision.Intersection.CapsuleCapsule do
               overlap = distance_clipped - min_distance
               penetration_depth = abs(overlap)
 
-              ContactManifold.contact_manifold(
+              Contact.contact_manifold(
                 contacts:
-                  {ContactPoint.contact_point(
+                  {Contact.contact_point(
                      world_point:
                        direction
                        |> Vec3.scale(-(cr_a - penetration_depth / 2))
                        |> Vec3.add(clipped_nearest_1),
                      depth: penetration_depth
                    ),
-                   ContactPoint.contact_point(
+                   Contact.contact_point(
                      world_point:
                        direction
                        |> Vec3.scale(-(cr_a - penetration_depth / 2))

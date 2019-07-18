@@ -5,11 +5,12 @@ defmodule ElixirRigidPhysics.Collision.Narrowphase do
   Supported:
   * sphere-sphere
   * sphere-capsule
+  * capsule-capsule
 
   Planned:
-  * capsule-capsule
-  * box-sphere
-  * capsule-box
+  * sphere-hull
+  * capsule-hull
+  * hull-hull
 
   Check [here](http://media.steampowered.com/apps/valve/2015/DirkGregorius_Contacts.pdf) for a good summary of things.
   """
@@ -18,7 +19,7 @@ defmodule ElixirRigidPhysics.Collision.Narrowphase do
   require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
   require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
   require ElixirRigidPhysics.Geometry.Hull, as: Hull
-  require ElixirRigidPhysics.Collision.ContactManifold, as: ContactManifold
+  require ElixirRigidPhysics.Collision.Contact, as: Contact
 
   alias ElixirRigidPhysics.Collision.Intersection.SphereSphere
   alias ElixirRigidPhysics.Collision.Intersection.SphereCapsule
@@ -27,12 +28,10 @@ defmodule ElixirRigidPhysics.Collision.Narrowphase do
   alias ElixirRigidPhysics.Collision.Intersection.CapsuleHull
   alias ElixirRigidPhysics.Collision.Intersection.HullHull
 
-  @type contact_result :: ContactManifold.contact_manifold() | :no_intersection | :coincident | {:error, :bad_bodies}
-
   @doc """
   Tests the intersection of two shapes.
   """
-  @spec test_intersection(Body.body(), Body.body()) :: contact_result
+  @spec test_intersection(Body.body(), Body.body()) :: Contact.contact_result
 
   def test_intersection(
         Body.body(shape: Sphere.sphere()) = a,
