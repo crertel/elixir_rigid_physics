@@ -8,6 +8,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.SphereCapsule do
   require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
   require ElixirRigidPhysics.Collision.ContactManifold, as: ContactManifold
   require ElixirRigidPhysics.Collision.ContactPoint, as: ContactPoint
+  alias ElixirRigidPhysics.Collision.Narrowphase
 
   alias ElixirRigidPhysics.Geometry.Util, as: GUtil
   alias Graphmath.Vec3
@@ -83,6 +84,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.SphereCapsule do
     iex> SphereCapsule.check(a,b)
     {:contact_manifold, {{:contact_point, {3.0, 0.0, 0.0}, 4.0}}, {-1.0, 0.0, 0.0}}
   """
+  @spec check(Body.body(), Body.body()) :: Narrowphase.contact_result
   def check(
         Body.body(shape: Sphere.sphere(radius: r_a), position: p_a),
         Body.body(shape: Capsule.capsule(cap_radius: cr_b) = c, position: p_b, orientation: o_b)

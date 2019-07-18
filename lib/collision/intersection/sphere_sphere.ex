@@ -7,6 +7,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.SphereSphere do
   require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
   require ElixirRigidPhysics.Collision.ContactManifold, as: ContactManifold
   require ElixirRigidPhysics.Collision.ContactPoint, as: ContactPoint
+  alias ElixirRigidPhysics.Collision.Narrowphase
   alias Graphmath.Vec3
 
   @verysmol 1.0e-12
@@ -69,7 +70,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.SphereSphere do
     iex> SphereSphere.check(a,b)
     {:contact_manifold, {{:contact_point, {3.5, 0.0, 0.0}, 1.0}}, {1.0, 0.0, 0.0}}
   """
-  @spec check(Body.body(), Body.body()) :: ContactManifold.contact_manifold()
+  @spec check(Body.body(), Body.body()) :: Narrowphase.contact_result
   def check(
         Body.body(shape: Sphere.sphere(radius: r_a), position: p_a),
         Body.body(shape: Sphere.sphere(radius: r_b), position: p_b)
