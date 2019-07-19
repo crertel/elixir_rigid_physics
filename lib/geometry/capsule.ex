@@ -51,4 +51,35 @@ defmodule ElixirRigidPhysics.Geometry.Capsule do
       {0.0, l / 2.0, 0.0}
     }
   end
+
+  @doc """
+  Finds a support point (usually for GJK) on a capsule given a search direction.
+
+  ## Examples
+    iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+    iex> c = Capsule.create(2.0, 1.0)
+    iex> Capsule.support_point(c, {1.0,1.0,1.0})
+    {0.0, 1.0, 0.0}
+
+    iex> require ElixirRigidPhysics.Geometry.Capsule, as: Capsule
+    iex> c = Capsule.create(2.0, 1.0)
+    iex> Capsule.support_point(c, {1.0,-1.0,1.0})
+    {0.0, -1.0, 0.0}
+  """
+  @spec support_point(capsule, Vec3.vec3) :: Vec3.vec3
+  def support_point(capsule(axial_length: l), {_x,y,_z} = _direction) do
+    # technique borrowed from ReactPhysics3D
+    # it weirds me out that the most extreme point is always a capsule end, but maybe that's okay?
+
+    hl = l / 2.0
+
+    dot_top = hl * y
+    dot_bottom = -hl * y
+
+    if dot_top > dot_bottom do
+      {0.0, hl, 0.0}
+    else
+      {0.0, -hl, 0.0}
+    end
+  end
 end
