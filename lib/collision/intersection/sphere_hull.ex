@@ -64,14 +64,46 @@ defmodule ElixirRigidPhysics.Collision.Intersection.SphereHull do
 
     dir_local_b_to_local_a = Quatern.multiply(o_b_inv, o_a)
 
-    v = {0.0, 1.0, 0.0}
+    v1 = {0.0, 1.0, 0.0}
+    c = support(v1, sphere, p_a, hull, p_b, o_b)
 
+    if Vec3.dot(c, v1) < 0 do
+      :no_intersection
+    else
+      v2 = Vec3.scale(c, -1.0)
+      b = support(v2, sphere, p_a, hull, p_b, o_b)
+      if Vec3.dot(b, v2) < 0 do
+        :no_intersection
+      else
+        v3 = cross_aba( Vec3.subtract(c, b), Vec3.scale(b, -1.0) )
 
-
-
-    :no_intersection
+        do_gjk(v3, {b, c}, sphere, p_a, hull, p_b, o_b, 32)
+      end
+    end
   end
 
+  def support(dir, sphere, _p_a, hull, _p_b, _o_b) do
+    Vec3.subtract( Sphere.support_point(sphere, dir), Hull.support_point(hull, Vec3.scale(dir, -1.0)))
+  end
 
+  def do_gjk( dir, simplex, Sphere.sphere(radius: r_a) = sphere, p_a, Hull.hull(faces: faces) = hull, p_b, o_b, 0), do: :intersection
+  def do_gjk( dir, simplex, Sphere.sphere(radius: r_a) = sphere, p_a, Hull.hull(faces: faces) = hull, p_b, o_b, iterations_left) do
+    a = support(dir, sphere, p_a, hull, p_b, o_b)
+    if Vec3.dot(a, dir) < 0 do
+      :no_intersection
+    else
+      new_simplex = update()
+      do_gjk( dir, new_simplex, Sphere.sphere(radius: r_a) = sphere, p_a, Hull.hull(faces: faces) = hull, p_b, o_b, iterations_left - 1)
+    end
+  end
+
+  def cross_aba(a, b) do
+    Vec3.cross(a, b)
+    |> Vec3.cross(a)
+  end
+
+  def update() do
+
+  end
 
 end
