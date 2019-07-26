@@ -92,8 +92,10 @@ defmodule ElixirRigidPhysics.Collision.Intersection.SphereHull do
     if Vec3.dot(a, dir) < 0 do
       :no_intersection
     else
-      new_simplex = update()
-      do_gjk( dir, new_simplex, Sphere.sphere(radius: r_a) = sphere, p_a, Hull.hull(faces: faces) = hull, p_b, o_b, iterations_left - 1)
+      case update_simplex(a,simplex) do
+        {new_dir, new_simplex} -> do_gjk( new_dir, new_simplex, Sphere.sphere(radius: r_a) = sphere, p_a, Hull.hull(faces: faces) = hull, p_b, o_b, iterations_left - 1)
+        :no_intersection -> :no_intersection
+      end
     end
   end
 
@@ -102,8 +104,41 @@ defmodule ElixirRigidPhysics.Collision.Intersection.SphereHull do
     |> Vec3.cross(a)
   end
 
-  def update() do
+  def update_simplex(a, {b,c}) do
+    ao = Vec3.negate(a)
+    ab = Vec3.subtract(b, a)
+    ac = Vec3.subtract(c, a)
+    abc = Vec3.cross(ab,ac)
+    abp = Vec3.cross( ab, abc)
+
+    if Vec3.dot(abp, ao) > 0 do
+      {cross_aba(ab, ao), {a,b}}
+    else
+      acp = Vec3.cross(abc, ac)
+      if Vec3.dot(acp,ao) > 0 do
+        { cross_aba(ac,ao), {a,c}}
+      else
+        if  Vec3.dot(abc,ao) > 0 do
+          {abc, a,b,c}
+        else
+          { Vec3.negate(abc), {a,c,b} }
+        end
+      end
+    end
+  end
+
+  def update_simplex(a, {b,c,d}) do
+    ao = Vec3.negate(a)
+    ab = Vec3.subtract(b, a)
+    ac = Vec3.subtract(c,a)
+    ad = Vec3.sutbract(d,a)
+
+    abc = Vec3.cross(ab,ac)
+    acd = Vec3.cross(ac,ad)
+    adb = Vec3.cross(ad,ab)
+
 
   end
+
 
 end
