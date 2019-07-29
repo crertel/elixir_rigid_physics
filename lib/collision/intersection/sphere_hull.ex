@@ -58,87 +58,25 @@ defmodule ElixirRigidPhysics.Collision.Intersection.SphereHull do
         Body.body(shape: Hull.hull(faces: faces) = hull, position: p_b, orientation: o_b)
       ) do
 
-    o_a = Quatern.identity()
+    # o_a = Quatern.identity()
 
-    o_b_inv = Quatern.conjugate(o_b)
+    # o_b_inv = Quatern.conjugate(o_b)
 
-    dir_local_b_to_local_a = Quatern.multiply(o_b_inv, o_a)
+    # dir_local_b_to_local_a = Quatern.multiply(o_b_inv, o_a)
 
-    v1 = {0.0, 1.0, 0.0}
-    c = support(v1, sphere, p_a, hull, p_b, o_b)
+    # v1 = {0.0, 1.0, 0.0}
+    # c = support(v1, sphere, p_a, hull, p_b, o_b)
 
-    if Vec3.dot(c, v1) < 0 do
-      :no_intersection
-    else
-      v2 = Vec3.scale(c, -1.0)
-      b = support(v2, sphere, p_a, hull, p_b, o_b)
-      if Vec3.dot(b, v2) < 0 do
-        :no_intersection
-      else
-        v3 = cross_aba( Vec3.subtract(c, b), Vec3.scale(b, -1.0) )
-
-        do_gjk(v3, {b, c}, sphere, p_a, hull, p_b, o_b, 32)
-      end
-    end
+    # if Vec3.dot(c, v1) < 0 do
+    #   :no_intersection
+    # else
+    #   v2 = Vec3.scale(c, -1.0)
+    #   b = support(v2, sphere, p_a, hull, p_b, o_b)
+    # end
   end
 
-  def support(dir, sphere, _p_a, hull, _p_b, _o_b) do
-    Vec3.subtract( Sphere.support_point(sphere, dir), Hull.support_point(hull, Vec3.scale(dir, -1.0)))
-  end
-
-  def do_gjk( dir, simplex, Sphere.sphere(radius: r_a) = sphere, p_a, Hull.hull(faces: faces) = hull, p_b, o_b, 0), do: :intersection
-  def do_gjk( dir, simplex, Sphere.sphere(radius: r_a) = sphere, p_a, Hull.hull(faces: faces) = hull, p_b, o_b, iterations_left) do
-    a = support(dir, sphere, p_a, hull, p_b, o_b)
-    if Vec3.dot(a, dir) < 0 do
-      :no_intersection
-    else
-      case update_simplex(a,simplex) do
-        {new_dir, new_simplex} -> do_gjk( new_dir, new_simplex, Sphere.sphere(radius: r_a) = sphere, p_a, Hull.hull(faces: faces) = hull, p_b, o_b, iterations_left - 1)
-        :no_intersection -> :no_intersection
-      end
-    end
-  end
-
-  def cross_aba(a, b) do
-    Vec3.cross(a, b)
-    |> Vec3.cross(a)
-  end
-
-  def update_simplex(a, {b,c}) do
-    ao = Vec3.negate(a)
-    ab = Vec3.subtract(b, a)
-    ac = Vec3.subtract(c, a)
-    abc = Vec3.cross(ab,ac)
-    abp = Vec3.cross( ab, abc)
-
-    if Vec3.dot(abp, ao) > 0 do
-      {cross_aba(ab, ao), {a,b}}
-    else
-      acp = Vec3.cross(abc, ac)
-      if Vec3.dot(acp,ao) > 0 do
-        { cross_aba(ac,ao), {a,c}}
-      else
-        if  Vec3.dot(abc,ao) > 0 do
-          {abc, a,b,c}
-        else
-          { Vec3.negate(abc), {a,c,b} }
-        end
-      end
-    end
-  end
-
-  def update_simplex(a, {b,c,d}) do
-    ao = Vec3.negate(a)
-    ab = Vec3.subtract(b, a)
-    ac = Vec3.subtract(c,a)
-    ad = Vec3.sutbract(d,a)
-
-    abc = Vec3.cross(ab,ac)
-    acd = Vec3.cross(ac,ad)
-    adb = Vec3.cross(ad,ab)
-
-
-  end
-
+  # def support(dir, sphere, _p_a, hull, _p_b, _o_b) do
+  #   Vec3.subtract( Sphere.support_point(sphere, dir), Hull.support_point(hull, Vec3.scale(dir, -1.0)))
+  # end
 
 end
