@@ -87,4 +87,25 @@ defmodule ElixirRigidPhysics.Geometry.Triangle do
     n = Vec3.cross(ab, ac) |> Vec3.normalize()
     Plane.create(n, a)
   end
+
+
+  @doc """
+  Finds the signed area of a triangle ABC.
+
+  ## Examples
+    iex> # IO.puts "Test area of planar triangle"
+    iex> require ElixirRigidPhysics.Geometry.Triangle, as: Triangle
+    iex> a = {0.0, 0.0, 0.0}
+    iex> b = {0.0, 1.0, 0.0}
+    iex> c = {1.0, 0.0, 0.0}
+    iex> t= Triangle.create_from_points( a, b, c )
+    iex> Triangle.signed_area(t)
+    0.5
+  """
+  @spec signed_area(triangle) :: float()
+  def signed_area(triangle(a: a, b: b, c: c)) do
+    ba = Vec3.subtract(b, a)
+    ca = Vec3.subtract(c, a)
+    0.5 * Vec3.length(Vec3.cross(ba, ca))
+  end
 end
