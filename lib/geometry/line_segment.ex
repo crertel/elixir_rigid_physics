@@ -82,7 +82,6 @@ defmodule ElixirRigidPhysics.Geometry.LineSegment do
     iex> q = {0.45, 3.0, 4.0}
     iex> LineSegment.project( segment, q)
     {0.45, 0.0, 0.0}
-
   """
   @spec project( line_segment, Vec3.vec3) :: Vec3.vec3
   def project( line_segment(a: a, b: b),  q) do
@@ -211,5 +210,83 @@ defmodule ElixirRigidPhysics.Geometry.LineSegment do
   @spec from_barycentric( line_segment, {number, number}) :: Vec3.vec3
   def from_barycentric( line_segment(a: a, b: b), {u,v}) do
     Vec3.weighted_sum(u,a,v,b)
+  end
+
+  @doc """
+  Projects a query point `q` onto the neartest point on line segment `ab`, giving the nearest point.
+
+  ## Examples
+    iex> #IO.puts("Check segment coincident with a")
+    iex> require ElixirRigidPhysics.Geometry.LineSegment, as: LineSegment
+    iex> segment = {:line_segment, {0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}}
+    iex> q = {0.0, 0.0, 0.0}
+    iex> LineSegment.nearest_point( segment, q)
+    {0.0, 0.0, 0.0}
+
+    iex> #IO.puts("Check segment coincident with b")
+    iex> require ElixirRigidPhysics.Geometry.LineSegment, as: LineSegment
+    iex> segment = {:line_segment, {0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}}
+    iex> q = {1.0, 0.0, 0.0}
+    iex> LineSegment.nearest_point( segment, q)
+    {1.0, 0.0, 0.0}
+
+    iex> #IO.puts("Check segment interior of segment")
+    iex> require ElixirRigidPhysics.Geometry.LineSegment, as: LineSegment
+    iex> segment = {:line_segment, {0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}}
+    iex> q = {0.5, 0.0, 0.0}
+    iex> LineSegment.nearest_point( segment, q)
+    {0.5, 0.0, 0.0}
+
+    iex> #IO.puts("Check segment in voronoi region of a")
+    iex> require ElixirRigidPhysics.Geometry.LineSegment, as: LineSegment
+    iex> segment = {:line_segment, {0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}}
+    iex> q = {-0.5, 0.0, 0.0}
+    iex> LineSegment.nearest_point( segment, q)
+    {0.0, 0.0, 0.0}
+
+    iex> #IO.puts("Check segment in voronoi region of b")
+    iex> require ElixirRigidPhysics.Geometry.LineSegment, as: LineSegment
+    iex> segment = {:line_segment, {0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}}
+    iex> q = {1.5, 0.0, 0.0}
+    iex> LineSegment.nearest_point( segment, q)
+    {1.0, 0.0, 0.0}
+
+    iex> #IO.puts("Check offset segment in voronoi region of a")
+    iex> require ElixirRigidPhysics.Geometry.LineSegment, as: LineSegment
+    iex> segment = {:line_segment, {0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}}
+    iex> q = {-0.5, 3.0, 4.0}
+    iex> LineSegment.nearest_point( segment, q)
+    {0.0, 0.0, 0.0}
+
+    iex> #IO.puts("Check offset segment in voronoi region of b")
+    iex> require ElixirRigidPhysics.Geometry.LineSegment, as: LineSegment
+    iex> segment = {:line_segment, {0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}}
+    iex> q = {1.5, 3.0, 4.0}
+    iex> LineSegment.nearest_point( segment, q)
+    {1.0, 0.0, 0.0}
+
+    iex> #IO.puts("Check offset segment in voronoi region of segment")
+    iex> require ElixirRigidPhysics.Geometry.LineSegment, as: LineSegment
+    iex> segment = {:line_segment, {0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}}
+    iex> q = {0.45, 3.0, 4.0}
+    iex> LineSegment.nearest_point( segment, q)
+    {0.45, 0.0, 0.0}
+  """
+  @spec nearest_point( line_segment, Vec3.vec3) :: Vec3.vec3
+  def nearest_point( line_segment(a: a, b: b), q) do
+    segment_vec = Vec3.subtract(b,a)
+    segment_vec_length = Vec3.length(segment_vec)
+    segment_vec_unit = Vec3.scale(segment_vec, 1.0 / segment_vec_length)
+    qa = Vec3.subtract(q,a)
+    bq = Vec3.subtract(b,q)
+
+    u = Vec3.dot(bq, segment_vec_unit) / segment_vec_length
+    v = Vec3.dot(qa, segment_vec_unit) / segment_vec_length
+
+    cond do
+      v < 0 -> a
+      u < 0 -> b
+      true -> Vec3.weighted_sum(u,a,v,b)
+    end
   end
 end
