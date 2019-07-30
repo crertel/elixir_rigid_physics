@@ -102,6 +102,7 @@ defmodule ElixirRigidPhysics.Geometry.Tetrahedron do
   """
   @spec to_barycentric(tetrahedron, Vec3.vec3) :: { float, float, float, float}
   def to_barycentric( tetrahedron(a: a, b: b, c: c, d: d) = t, q ) do
+    # fun note...with an apex of q, each face must be wound the same way
     v_qbcd = create(q,b,c,d) |> volume() # a
     v_qacd = create(q,c,a,d) |> volume() # b
     v_qabd = create(q,a,b,d) |> volume() # c
