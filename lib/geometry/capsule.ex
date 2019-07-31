@@ -15,6 +15,8 @@ defmodule ElixirRigidPhysics.Geometry.Capsule do
   Record.defrecord(:capsule, axial_length: 0.5, cap_radius: 0.25)
   @type capsule :: record(:capsule, axial_length: number, cap_radius: number)
 
+  alias Graphmath.Vec3
+
   @doc """
   Creates a capsule geometry.
 

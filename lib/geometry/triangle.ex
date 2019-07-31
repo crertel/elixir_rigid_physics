@@ -6,7 +6,7 @@ defmodule ElixirRigidPhysics.Geometry.Triangle do
 
   require Record
   Record.defrecord(:triangle, a: {0.0, 0.0, 0.0}, b: {0.0, 1.0, 0.0}, c: {0.0, 0.0, 1.0})
-  @type triangle :: record(:triangle, a: Vec3.vec3(), b: Vec3.vec3(), c: Vec3.vec3())
+  @type triangle :: record(:triangle, a: Vec3.vec3, b: Vec3.vec3, c: Vec3.vec3)
 
   require ElixirRigidPhysics.Geometry.Plane, as: Plane
 
@@ -22,7 +22,7 @@ defmodule ElixirRigidPhysics.Geometry.Triangle do
     iex> Triangle.create_from_points( a, b, c )
     {:triangle, {1.0, 0.0, 1.0}, {0.0, 0.0, 0.0}, {3.0, 0.0, 1.0}}
   """
-  @spec create_from_points(Vec3.vec3(), Vec3.vec3(), Vec3.vec3()) :: triangle
+  @spec create_from_points(Vec3.vec3, Vec3.vec3, Vec3.vec3) :: triangle
   def create_from_points(a, b, c) do
     triangle(a: a, b: b, c: c)
   end

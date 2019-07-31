@@ -25,14 +25,14 @@ defmodule ElixirRigidPhysics.Dynamics.Body do
           record(:body,
             shape: Geometry.geometry(),
             mass: number,
-            position: Vec3.vec3(),
+            position: Vec3.vec3,
             orientation: Quatern.quatern(),
             linear_dampening: number,
             angular_dampening: number,
-            linear_velocity: Vec3.vec3(),
-            angular_velocity: Vec3.vec3(),
-            accumulated_force: Vec3.vec3(),
-            accumulated_torque: Vec3.vec3()
+            linear_velocity: Vec3.vec3,
+            angular_velocity: Vec3.vec3,
+            accumulated_force: Vec3.vec3,
+            accumulated_torque: Vec3.vec3
           )
 
   @spec create(Geometry.geometry(), [{atom, any}]) :: body

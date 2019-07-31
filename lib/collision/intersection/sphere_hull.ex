@@ -73,6 +73,8 @@ defmodule ElixirRigidPhysics.Collision.Intersection.SphereHull do
     #   v2 = Vec3.scale(c, -1.0)
     #   b = support(v2, sphere, p_a, hull, p_b, o_b)
     # end
+
+    :no_intersection
   end
 
   # def support(dir, sphere, _p_a, hull, _p_b, _o_b) do

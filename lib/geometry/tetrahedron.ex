@@ -6,7 +6,7 @@ defmodule ElixirRigidPhysics.Geometry.Tetrahedron do
 
   require Record
   Record.defrecord(:tetrahedron, a: {0.0, 0.0, 0.0}, b: {1.0, 0.0, 0.0}, c: {0.0, 1.0, 0.0}, d: {0.0, 0.0, 1.0})
-  @type tetrahedron :: record(:tetrahedron, a: Vec3.vec3(), b: Vec3.vec3(), c: Vec3.vec3(), d: Vec3.vec3())
+  @type tetrahedron :: record(:tetrahedron, a: Vec3.vec3, b: Vec3.vec3, c: Vec3.vec3, d: Vec3.vec3)
 
   @doc """
   Function to create a tetrahedron given four points.
@@ -112,4 +112,35 @@ defmodule ElixirRigidPhysics.Geometry.Tetrahedron do
     { v_qbcd / v_total, v_qacd / v_total, v_qabd / v_total, v_qcab / v_total}
   end
 
+  @type voronoi_vertex_region :: :region_a | :region_b | :region_c | :region_d
+  @type voronoi_edge_region :: :region_ab | :region_ac | :region_ad | :region_bc | :region_bd | :region_cd
+  @type voronoi_face_region :: :region_abc | :region_abd | :region_acd | :region_bcd
+  @type voronoi_polyhedron_region :: :region_abcd
+  @type voronoi_region :: voronoi_vertex_region | voronoi_edge_region | voronoi_face_region | voronoi_polyhedron_region
+
+  @spec classify_point_for_tetrahedron( tetrahedron, Vec3.vec3) :: voronoi_region
+  def classify_point_for_tetrahedron( tetra, q ) do
+    { a, b, c, d } = to_barycentric(tetra, q)
+    cond do
+      a >= 0 and b <= 0 and c <= 0 and d <= 0 -> :region_a
+      a <= 0 and b >= 0 and c <= 0 and d <= 0 -> :region_b
+      a <= 0 and b <= 0 and c >= 0 and d <= 0 -> :region_c
+      a <= 0 and b <= 0 and c <= 0 and d >= 0 -> :region_d
+
+      a >= 0 and b >= 0 and c <= 0 and d <= 0 -> :region_ab
+      a >= 0 and b <= 0 and c >= 0 and d <= 0 -> :region_ac
+      a >= 0 and b <= 0 and c <= 0 and d >= 0 -> :region_ad
+      a <= 0 and b >= 0 and c >= 0 and d <= 0 -> :region_bc
+      a <= 0 and b >= 0 and c <= 0 and d >= 0 -> :region_bd
+      a <= 0 and b <= 0 and c >= 0 and d >= 0 -> :region_cd
+
+      a >= 0 and b >= 0 and c >= 0 and d <= 0 -> :region_abc
+      a >= 0 and b >= 0 and c <= 0 and d >= 0 -> :region_abd
+      a >= 0 and b <= 0 and c >= 0 and d >= 0 -> :region_acd
+      a <= 0 and b >= 0 and c >= 0 and d >= 0 -> :region_bcd
+
+      a > 0 and b > 0 and c >  0 and d > 0 -> :region_abcd
+    end
+    :wat
+  end
 end

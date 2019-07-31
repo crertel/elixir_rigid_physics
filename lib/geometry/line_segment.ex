@@ -1,5 +1,7 @@
 defmodule ElixirRigidPhysics.Geometry.LineSegment do
 
+  alias Graphmath.Vec3
+
   @moduledoc """
   Line segment geometry module.
 
@@ -8,7 +10,7 @@ defmodule ElixirRigidPhysics.Geometry.LineSegment do
   require Record
   Record.defrecord(:line_segment, a: {0.0, 0.0, 0.0}, b: {0.0, 0.0, 0.0})
   @type line_segment :: record(:line_segment, a: Vec3.vec3, b: Vec3.vec3)
-  alias Graphmath.Vec3
+
 
   @doc """
   Creates a line segment.
