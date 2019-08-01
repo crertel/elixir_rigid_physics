@@ -112,6 +112,51 @@ defmodule ElixirRigidPhysics.Geometry.Tetrahedron do
     { v_qbcd / v_total, v_qacd / v_total, v_qabd / v_total, v_qcab / v_total}
   end
 
+  @doc """
+  Converts from barycentric coords on a tetrahedron to global cartesian coordinates.
+
+  ## Examples
+    iex> # IO.puts "Check barycentric coords for a"
+    iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+    iex> a = {1.0, 1.0, 1.0}
+    iex> b = {2.0, 1.0, 1.0}
+    iex> c = {1.0, 2.0, 1.0}
+    iex> d = {1.0, 1.0, 2.0}
+    iex> t = Tetra.create(a,b,c,d)
+    iex> Tetra.from_barycentric(t, {1.0, 0.0, 0.0, 0.0})
+    {1.0, 1.0, 1.0}
+
+    iex> # IO.puts "Check barycentric coords for b"
+    iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+    iex> a = {1.0, 1.0, 1.0}
+    iex> b = {2.0, 1.0, 1.0}
+    iex> c = {1.0, 2.0, 1.0}
+    iex> d = {1.0, 1.0, 2.0}
+    iex> t = Tetra.create(a,b,c,d)
+    iex> Tetra.from_barycentric(t, {0.0, 1.0, 0.0, 0.0})
+    {2.0, 1.0, 1.0}
+
+    iex> # IO.puts "Check barycentric coords for c"
+    iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+    iex> a = {1.0, 1.0, 1.0}
+    iex> b = {2.0, 1.0, 1.0}
+    iex> c = {1.0, 2.0, 1.0}
+    iex> d = {1.0, 1.0, 2.0}
+    iex> t = Tetra.create(a,b,c,d)
+    iex> Tetra.from_barycentric(t, {0.0, 0.0, 1.0, 0.0})
+    {1.0, 2.0, 1.0}
+
+    iex> # IO.puts "Check barycentric coords for d"
+    iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+    iex> a = {1.0, 1.0, 1.0}
+    iex> b = {2.0, 1.0, 1.0}
+    iex> c = {1.0, 2.0, 1.0}
+    iex> d = {1.0, 1.0, 2.0}
+    iex> t = Tetra.create(a,b,c,d)
+    iex> Tetra.from_barycentric(t, {0.0, 0.0, 0.0, 1.0})
+    {1.0, 1.0, 2.0}
+
+  """
   @spec from_barycentric(tetrahedron, {number, number, number, number}) :: Vec3.vec3
   def from_barycentric( tetrahedron(a: a, b: b, c: c, d: d), {b_a,b_b,b_c,b_d}) do
     Vec3.add( Vec3.weighted_sum(b_a, a, b_b, b), Vec3.weighted_sum(b_c, c, b_d, d))

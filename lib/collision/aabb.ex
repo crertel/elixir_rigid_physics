@@ -170,7 +170,7 @@ defmodule ElixirRigidPhysics.Collision.AABB do
 
     iex> require ElixirRigidPhysics.Collision.AABB, as: AABB
     iex> require ElixirRigidPhysics.Geometry.Hull, as: Hull
-    iex> h = AABB.create_local_from_shape( Hull.create_box(2,3,4))
+    iex> AABB.create_local_from_shape( Hull.create_box(2,3,4))
     {:aabb, {-1.0, -1.5, -2.0}, {1.0, 1.5, 2.0}}
 
   """
