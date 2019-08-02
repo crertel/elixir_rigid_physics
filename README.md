@@ -5,3 +5,9 @@
 
 
 A 3D rigid-body physics library for Elixir.
+
+
+## Acknowledgements
+
+* [@MaggieWalker](https://github.com/MaggieWalker)
+* [@louije](https://github.com/louije)
