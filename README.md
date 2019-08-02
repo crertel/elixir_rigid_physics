@@ -9,5 +9,10 @@ A 3D rigid-body physics library for Elixir.
 
 ## Acknowledgements
 
+I'd like to thank the following folks for their help and support in this project:
+
 * [@MaggieWalker](https://github.com/MaggieWalker)
 * [@louije](https://github.com/louije)
+* [David Eberly](https://www.geometrictools.com/)
+* [Randy Gaul](https://www.randygaul.net/)
+* [The Recurse Center](https://www.recurse.com/)
