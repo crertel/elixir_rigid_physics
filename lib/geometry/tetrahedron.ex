@@ -8,6 +8,10 @@ defmodule ElixirRigidPhysics.Geometry.Tetrahedron do
   Record.defrecord(:tetrahedron, a: {0.0, 0.0, 0.0}, b: {1.0, 0.0, 0.0}, c: {0.0, 1.0, 0.0}, d: {0.0, 0.0, 1.0})
   @type tetrahedron :: record(:tetrahedron, a: Vec3.vec3, b: Vec3.vec3, c: Vec3.vec3, d: Vec3.vec3)
 
+  require ElixirRigidPhysics.Geometry.LineSegment, as: LSeg
+  require ElixirRigidPhysics.Geometry.Triangle, as: Tri
+  require ElixirRigidPhysics.Geometry.Plane, as: Plane
+
   @doc """
   Function to create a tetrahedron given four points.
 
@@ -169,110 +173,178 @@ defmodule ElixirRigidPhysics.Geometry.Tetrahedron do
   @type voronoi_region :: voronoi_vertex_region | voronoi_edge_region | voronoi_face_region | voronoi_polyhedron_region
 
   @doc """
-  Figure out which voronoi region of a tetrahedron a point is in.
+  Find the nearest point on or in a tetrahedron to a query point, and also return its voronoi region.
 
   ## Examples
     iex> #IO.puts "Classify internal voronoi region abcd"
     iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
     iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
-    iex> Tetra.classify_point_for_tetrahedron( tetra, {0.1, 0.1, 0.1})
-    :region_abcd
+    iex> q = {0.1, 0.1, 0.1}
+    iex> Tetra.get_nearest_point( tetra, q)
+    {{0.1, 0.1, 0.1}, :region_abcd}
 
     iex> #IO.puts "Classify vertex voronoi region a, near"
     iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
     iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
-    iex> Tetra.classify_point_for_tetrahedron( tetra, {0.0, 0.0, 0.0})
-    :region_a
+    iex> q = {0.0, 0.0, 0.0}
+    iex> Tetra.get_nearest_point( tetra, q)
+    { {0.0, 0.0, 0.0}, :region_a}
 
     iex> #IO.puts "Classify vertex voronoi region a, far"
     iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
     iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
-    iex> Tetra.classify_point_for_tetrahedron( tetra, {-1.0, -1.0, -1.0})
-    :region_a
+    iex> q = {-1.0, -1.0, -1.0}
+    iex> Tetra.get_nearest_point( tetra, q)
+    { {0.0, 0.0, 0.0}, :region_a}
 
     iex> #IO.puts "Classify vertex voronoi region b, near"
     iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
     iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
-    iex> Tetra.classify_point_for_tetrahedron( tetra, {0.0, 0.0, 1.0})
-    :region_b
+    iex> q = {0.0, 0.0, 1.0}
+    iex> Tetra.get_nearest_point( tetra, q)
+    {{ 0.0, 0.0, 1.0}, :region_b}
 
     iex> #IO.puts "Classify vertex voronoi region b, far"
     iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
     iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
-    iex> Tetra.classify_point_for_tetrahedron( tetra, {-0.1, -0.1, 1.5})
-    :region_b
+    iex> q = {-0.1, -0.1, 1.5}
+    iex> Tetra.get_nearest_point( tetra, q)
+    {{ 0.0, 0.0, 1.0}, :region_b}
 
     iex> #IO.puts "Classify vertex voronoi region c, near"
     iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
     iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
-    iex> Tetra.classify_point_for_tetrahedron( tetra, {1.0, 0.0, 0.0})
-    :region_c
+    iex> q = {1.0, 0.0, 0.0}
+    iex> Tetra.get_nearest_point( tetra, q)
+    {{ 1.0, 0.0, 0.0}, :region_c}
 
     iex> #IO.puts "Classify vertex voronoi region c, far"
     iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
     iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
-    iex> Tetra.classify_point_for_tetrahedron( tetra, {1.5, -0.1, -0.1})
-    :region_c
+    iex> q = {1.5, -0.1, -0.1 }
+    iex> Tetra.get_nearest_point( tetra, q)
+    {{ 1.0, 0.0, 0.0}, :region_c}
 
     iex> #IO.puts "Classify vertex voronoi region d, near"
     iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
     iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
-    iex> Tetra.classify_point_for_tetrahedron( tetra, {0.0, 1.0, 0.0})
-    :region_d
+    iex> q = {0.0, 1.0, 0.0}
+    iex> Tetra.get_nearest_point( tetra, q)
+    {{ 0.0, 1.0, 0.0}, :region_d}
 
     iex> #IO.puts "Classify vertex voronoi region d, far"
     iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
     iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
-    iex> Tetra.classify_point_for_tetrahedron( tetra, {-0.1, 1.5, -0.1})
-    :region_d
-
-    iex> #IO.puts "Classify face voronoi region abd, near"
-    iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
-    iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
-    iex> Tetra.classify_point_for_tetrahedron( tetra, {-0.0, 0.1, 0.1})
-    :region_abd
-
-    iex> #IO.puts "Classify face voronoi region abd, far"
-    iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
-    iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
-    iex> Tetra.classify_point_for_tetrahedron( tetra, {-2.0, 0.1, 0.1})
-    :region_abd
-
-    iex> #IO.puts "Classify face voronoi region bcd, near"
-    iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
-    iex> sqrtthree = :math.sqrt(3.0)
-    iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
-    iex> Tetra.classify_point_for_tetrahedron( tetra, {sqrtthree,sqrtthree,sqrtthree})
-    :region_bcd
-
-    iex> #IO.puts "Classify face voronoi region bcd, far"
-    iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
-    iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
-    iex> Tetra.classify_point_for_tetrahedron( tetra, {1.0, 1.0, 1.0})
-    :region_bcd
+    iex> q = {-0.1, 1.5, -0.1 }
+    iex> Tetra.get_nearest_point( tetra, q)
+    {{ 0.0, 1.0, 0.0}, :region_d}
   """
-  @spec classify_point_for_tetrahedron( tetrahedron, Vec3.vec3) :: voronoi_region
-  def classify_point_for_tetrahedron( tetra, q ) do
-    { a, b, c, d } = to_barycentric(tetra, q)
+  @spec get_nearest_point( tetrahedron, Vec3.vec3) :: { Vec3.vec3, voronoi_region}
+  def get_nearest_point( tetrahedron(a: a, b: b, c: c, d: d) = tetra, q ) do
+    # I hope you like barycenters, 'cause we're about to calculate a lot of them.
+    { qa, qb, qc, qd } = to_barycentric(tetra, q)
+
+    tri_acb = Tri.create_from_points(a,c,b)
+    acb_plane = Tri.to_plane(tri_acb)
+    acb_q = Plane.project_point_to_plane(acb_plane, q)
+    { tri_acb_u, tri_acb_v, tri_acb_w} = Tri.to_barycentric(tri_acb, acb_q)
+
+    tri_abd = Tri.create_from_points(a,b,d)
+    abd_plane = Tri.to_plane(tri_abd)
+    abd_q = Plane.project_point_to_plane(abd_plane, q)
+    { tri_abd_u, tri_abd_v, tri_abd_w} = Tri.to_barycentric(tri_abd, abd_q)
+
+    tri_bcd = Tri.create_from_points(b,c,d)
+    bcd_plane = Tri.to_plane(tri_bcd)
+    bcd_q = Plane.project_point_to_plane(bcd_plane, q)
+    { tri_bcd_u, tri_bcd_v, tri_bcd_w} = Tri.to_barycentric(tri_bcd, bcd_q)
+
+    tri_cad = Tri.create_from_points(c,a,d)
+    cad_plane = Tri.to_plane(tri_cad)
+    cad_q = Plane.project_point_to_plane(cad_plane, q)
+    { tri_cad_u, tri_cad_v, tri_cad_w} = Tri.to_barycentric(tri_cad, cad_q)
+
+    l_ab = LSeg.create(a,b)
+    {l_ab_u, l_ab_v}  = LSeg.to_barycentric(l_ab, q)
+    l_ac = LSeg.create(a,c)
+    {l_ac_u, l_ac_v}  = LSeg.to_barycentric(l_ac, q)
+    l_ad = LSeg.create(a,d)
+    {l_ad_u, l_ad_v}  = LSeg.to_barycentric(l_ad, q)
+    l_bc = LSeg.create(b,c)
+    {l_bc_u, l_bc_v}  = LSeg.to_barycentric(l_bc, q)
+    l_bd = LSeg.create(b,d)
+    {l_bd_u, l_bd_v}  = LSeg.to_barycentric(l_bd, q)
+    l_cd = LSeg.create(c,d)
+    {l_cd_u, l_cd_v}  = LSeg.to_barycentric(l_cd, q)
+
+    # okay, remember:
+    # test verts, then edges, then faces, then containment
+
     cond do
-      a >= 0 and b <= 0 and c <= 0 and d <= 0 -> :region_a
-      a <= 0 and b >= 0 and c <= 0 and d <= 0 -> :region_b
-      a <= 0 and b <= 0 and c >= 0 and d <= 0 -> :region_c
-      a <= 0 and b <= 0 and c <= 0 and d >= 0 -> :region_d
+      # a
+      l_ab_v <= 0 and l_ac_v <= 0 and l_ad_v <= 0 -> {a, :region_a}
+      # b
+      l_ab_u <= 0 and l_bc_v <= 0 and l_bd_v <= 0 -> {b, :region_b}
+      # c
+      l_ac_u <= 0 and l_bc_u <= 0 and l_cd_v <= 0 -> {c, :region_c}
+      # d
+      l_ad_u <= 0 and l_bd_u <= 0 and l_cd_u <= 0 -> {d, :region_d}
 
-      a >= 0 and b >= 0 and c <= 0 and d <= 0 -> :region_ab
-      a >= 0 and b <= 0 and c >= 0 and d <= 0 -> :region_ac
-      a >= 0 and b <= 0 and c <= 0 and d >= 0 -> :region_ad
-      a <= 0 and b >= 0 and c >= 0 and d <= 0 -> :region_bc
-      a <= 0 and b >= 0 and c <= 0 and d >= 0 -> :region_bd
-      a <= 0 and b <= 0 and c >= 0 and d >= 0 -> :region_cd
+      # abcd
+      qa > 0 and qb > 0 and qc > 0 and qd > 0 -> {q, :region_abcd}
 
-      a >= 0 and b >= 0 and c >= 0 and d <= 0 -> :region_abc
-      a >= 0 and b >= 0 and c <= 0 and d >= 0 -> :region_abd
-      a >= 0 and b <= 0 and c >= 0 and d >= 0 -> :region_acd
-      a <= 0 and b >= 0 and c >= 0 and d >= 0 -> :region_bcd
+      true -> IO.puts """
+              Something's wrong.
 
-      a > 0 and b > 0 and c >  0 and d > 0 -> :region_abcd
+              Q : #{inspect q}
+              AB: #{inspect {l_ab_u, l_ab_v}}
+              AC: #{inspect {l_ac_u, l_ac_v}}
+              AD: #{inspect {l_ad_u, l_ad_v}}
+              BC: #{inspect {l_bc_u, l_bc_v}}
+              BD: #{inspect {l_bd_u, l_bd_v}}
+              CD: #{inspect {l_cd_u, l_cd_v}}
+              ACB: #{inspect { tri_acb_u, tri_acb_v, tri_acb_w}}
+              ABD: #{inspect { tri_abd_u, tri_abd_v, tri_abd_w}}
+              BCD: #{inspect { tri_bcd_u, tri_bcd_v, tri_bcd_w}}
+              CAD: #{inspect { tri_cad_u, tri_cad_v, tri_cad_w}}
+              """
     end
   end
+
+  # iex> #IO.puts "Classify vertex voronoi region d, near"
+  # iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+  # iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
+  # iex> Tetra.get_nearest_point( tetra, {0.0, 1.0, 0.0})
+  # :region_d
+
+  # iex> #IO.puts "Classify vertex voronoi region d, far"
+  # iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+  # iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
+  # iex> Tetra.get_nearest_point( tetra, {-0.1, 1.5, -0.1})
+  # :region_d
+
+  # iex> #IO.puts "Classify face voronoi region abd, near"
+  #   iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+  #   iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
+  #   iex> Tetra.classify_point_for_tetrahedron( tetra, {-0.0, 0.1, 0.1})
+  #   :region_abd
+
+  #   iex> #IO.puts "Classify face voronoi region abd, far"
+  #   iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+  #   iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
+  #   iex> Tetra.classify_point_for_tetrahedron( tetra, {-2.0, 0.1, 0.1})
+  #   :region_abd
+
+  #   iex> #IO.puts "Classify face voronoi region bcd, near"
+  #   iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+  #   iex> sqrtthree = :math.sqrt(3.0)
+  #   iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
+  #   iex> Tetra.classify_point_for_tetrahedron( tetra, {sqrtthree,sqrtthree,sqrtthree})
+  #   :region_bcd
+
+  #   iex> #IO.puts "Classify face voronoi region bcd, far"
+  #   iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+  #   iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
+  #   iex> Tetra.classify_point_for_tetrahedron( tetra, {1.0, 1.0, 1.0})
+  #   :region_bcd
 end

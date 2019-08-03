@@ -96,6 +96,8 @@ defmodule ElixirRigidPhysics.Geometry.LineSegment do
 
   See the [2010 Catto Erin GJK presentation](https://code.google.com/archive/p/box2d/downloads) for details.
 
+  Note that this is safe to use with points not collinear with the line segment--projection is built in.
+
   ## Examples
     iex> #IO.puts("Check segment coincident with a")
     iex> require ElixirRigidPhysics.Geometry.LineSegment, as: LineSegment
