@@ -12,6 +12,8 @@ defmodule ElixirRigidPhysics.Geometry.Sphere do
   Record.defrecord(:sphere, radius: 1.0)
   @type sphere :: record(:sphere, radius: number)
 
+  alias Graphmath.Vec3
+
   @doc """
   Creates a sphere geometry.
 
@@ -26,4 +28,18 @@ defmodule ElixirRigidPhysics.Geometry.Sphere do
   """
   @spec create(number) :: sphere
   def create(radius), do: sphere(radius: radius)
+
+  @doc """
+  Finds a support point (usually for GJK) on a sphere given a search direction.
+
+  ## Examples
+    iex> require ElixirRigidPhysics.Geometry.Sphere, as: Sphere
+    iex> s = Sphere.create(2.0)
+    iex> Sphere.support_point(s, {1.0,0.0,0.0})
+    {2.0, 0.0, 0.0}
+  """
+  @spec support_point(sphere, Vec3.vec3) :: Vec3.vec3
+  def support_point(sphere(radius: r), direction) do
+    Vec3.scale(direction, r)
+  end
 end

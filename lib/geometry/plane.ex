@@ -28,7 +28,7 @@ defmodule ElixirRigidPhysics.Geometry.Plane do
     iex> Plane.create( {0.0, 1.0, 0.0}, {0.0, 1.0, 0.0})
     {:plane, 0.0, 1.0, 0.0, -1.0}
   """
-  @spec create(Vec3.vec3(), Vec3.vec3()) :: plane
+  @spec create(Vec3.vec3, Vec3.vec3) :: plane
   def create({nx, ny, nz} = _normal, {px, py, pz} = _point) do
     d = -(nx * px + ny * py + nz * pz)
     plane(a: nx, b: ny, c: nz, d: d)
@@ -63,7 +63,7 @@ defmodule ElixirRigidPhysics.Geometry.Plane do
     0.0
 
   """
-  @spec distance_to_point(plane, Vec3.vec3()) :: float()
+  @spec distance_to_point(plane, Vec3.vec3) :: float
   def distance_to_point(plane(a: a, b: b, c: c, d: d) = _plane, {px, py, pz} = _point) do
     1.0 * (a * px + b * py + c * pz + d)
   end
