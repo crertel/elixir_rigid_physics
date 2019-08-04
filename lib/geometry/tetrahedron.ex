@@ -238,6 +238,96 @@ defmodule ElixirRigidPhysics.Geometry.Tetrahedron do
     iex> q = {-0.1, 1.5, -0.1 }
     iex> Tetra.get_nearest_point( tetra, q)
     {{ 0.0, 1.0, 0.0}, :region_d}
+
+    iex> #IO.puts "Classify edge voronoi region ab, near"
+    iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+    iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
+    iex> q = {0.0, 0.0, 0.5}
+    iex> Tetra.get_nearest_point( tetra, q)
+    {{ 0.0, 0.0, 0.5}, :region_ab}
+
+    iex> #IO.puts "Classify edge voronoi region ab, far"
+    iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+    iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
+    iex> q = {-0.1, -0.1, 0.5 }
+    iex> Tetra.get_nearest_point( tetra, q)
+    {{ 0.0, 0.0, 0.5}, :region_ab}
+
+    iex> #IO.puts "Classify edge voronoi region ac, near"
+    iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+    iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
+    iex> q = {0.5, 0.0, 0.0}
+    iex> Tetra.get_nearest_point( tetra, q)
+    {{ 0.5, 0.0, 0.0}, :region_ac}
+
+    iex> #IO.puts "Classify edge voronoi region ac, far"
+    iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+    iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
+    iex> q = {0.5, -0.1, -0.1 }
+    iex> Tetra.get_nearest_point( tetra, q)
+    {{ 0.5, 0.0, 0.0}, :region_ac}
+
+    iex> #IO.puts "Classify edge voronoi region ad, near"
+    iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+    iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
+    iex> q = {0.0, 0.5, 0.0}
+    iex> Tetra.get_nearest_point( tetra, q)
+    {{ 0.0, 0.5, 0.0}, :region_ad}
+
+    iex> #IO.puts "Classify edge voronoi region ad, far"
+    iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+    iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
+    iex> q = {-0.1, 0.5, -0.1 }
+    iex> Tetra.get_nearest_point( tetra, q)
+    {{ 0.0, 0.5, 0.0}, :region_ad}
+
+    iex> #IO.puts "Classify edge voronoi region bc, near"
+    iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+    iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
+    iex> q = {0.5, 0.0, 0.5}
+    iex> {nearest_point, region} = Tetra.get_nearest_point( tetra, q)
+    iex> { Graphmath.Vec3.equal( nearest_point, {0.5, 0.0, 0.5}, 0.0001), region}
+    {true, :region_bc}
+
+    iex> #IO.puts "Classify edge voronoi region bc, far"
+    iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+    iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
+    iex> q = {0.5, -0.1, 0.5 }
+    iex> {nearest_point, region} = Tetra.get_nearest_point( tetra, q)
+    iex> { Graphmath.Vec3.equal( nearest_point, {0.5, 0.0, 0.5}, 0.0001), region}
+    {true, :region_bc}
+
+    iex> #IO.puts "Classify edge voronoi region bd, near"
+    iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+    iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
+    iex> q = {0.0, 0.5, 0.5}
+    iex> {nearest_point, region} = Tetra.get_nearest_point( tetra, q)
+    iex> { Graphmath.Vec3.equal( nearest_point, {0.0, 0.5, 0.5}, 0.0001), region}
+    {true, :region_bd}
+
+    iex> #IO.puts "Classify edge voronoi region bd, far"
+    iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+    iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
+    iex> q = {-0.1, 0.5, 0.5 }
+    iex> {nearest_point, region} = Tetra.get_nearest_point( tetra, q)
+    iex> { Graphmath.Vec3.equal( nearest_point, {0.0, 0.5, 0.5}, 0.0001), region}
+    {true, :region_bd}
+
+    iex> #IO.puts "Classify edge voronoi region cd, near"
+    iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+    iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
+    iex> q = {0.5, 0.5, 0.0}
+    iex> {nearest_point, region} = Tetra.get_nearest_point( tetra, q)
+    iex> {Graphmath.Vec3.equal( nearest_point, {0.5, 0.5, 0.0}, 0.0001), region}
+    {true, :region_cd}
+
+    iex> #IO.puts "Classify edge voronoi region cd, far"
+    iex> require ElixirRigidPhysics.Geometry.Tetrahedron, as: Tetra
+    iex> tetra = Tetra.create( {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
+    iex> q = {0.5, 0.5, -1.0 }
+    iex> {nearest_point, region} = Tetra.get_nearest_point( tetra, q)
+    iex> {Graphmath.Vec3.equal( nearest_point, {0.5, 0.5, 0.0}, 0.0001), region}
+    {true, :region_cd}
   """
   @spec get_nearest_point( tetrahedron, Vec3.vec3) :: { Vec3.vec3, voronoi_region}
   def get_nearest_point( tetrahedron(a: a, b: b, c: c, d: d) = tetra, q ) do
@@ -278,8 +368,7 @@ defmodule ElixirRigidPhysics.Geometry.Tetrahedron do
     {l_cd_u, l_cd_v}  = LSeg.to_barycentric(l_cd, q)
 
     # okay, remember:
-    # test verts, then edges, then faces, then containment
-
+    # test verts, then edges, then faces...lowest dimension first!
     cond do
       # a
       l_ab_v <= 0 and l_ac_v <= 0 and l_ad_v <= 0 -> {a, :region_a}
@@ -289,6 +378,19 @@ defmodule ElixirRigidPhysics.Geometry.Tetrahedron do
       l_ac_u <= 0 and l_bc_u <= 0 and l_cd_v <= 0 -> {c, :region_c}
       # d
       l_ad_u <= 0 and l_bd_u <= 0 and l_cd_u <= 0 -> {d, :region_d}
+
+      # ab
+      l_ab_u > 0 and l_ab_v > 0 and tri_abd_w <= 0 and tri_acb_v <= 0 -> { LSeg.from_barycentric( l_ab, {l_ab_u, l_ab_v}), :region_ab}
+      # # ac
+      l_ac_u > 0 and l_ac_v > 0 and tri_acb_w <= 0 and tri_cad_w <= 0 -> { LSeg.from_barycentric( l_ac, {l_ac_u, l_ac_v}), :region_ac}
+      # # ad
+      l_ad_u > 0 and l_ad_v > 0 and tri_abd_v <= 0 and tri_cad_u <= 0 -> { LSeg.from_barycentric(l_ad, {l_ad_u, l_ad_v}), :region_ad}
+      # bc
+      l_bc_u > 0 and l_bc_v > 0 and tri_acb_u <= 0 and tri_bcd_w <= 0 -> { LSeg.from_barycentric(l_bc,{l_bc_u, l_bc_v}), :region_bc}
+      # bd
+      l_bd_u > 0 and l_bd_v > 0 and tri_abd_u <= 0 and tri_bcd_v <= 0 -> { LSeg.from_barycentric(l_bd,{l_bd_u, l_bd_v}), :region_bd}
+      # cd
+      l_cd_u > 0 and l_cd_v > 0 and tri_cad_v <= 0 and tri_bcd_u <= 0 -> { LSeg.from_barycentric(l_cd, {l_cd_u, l_cd_v}), :region_cd}
 
       # abcd
       qa > 0 and qb > 0 and qc > 0 and qd > 0 -> {q, :region_abcd}
