@@ -82,7 +82,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.SphereCapsule do
     iex> SphereCapsule.check(a,b)
     {:contact_manifold, {{:contact_point, {3.0, 0.0, 0.0}, 4.0}}, {-1.0, 0.0, 0.0}}
   """
-  @spec check(Body.body(), Body.body()) :: Contact.contact_result
+  @spec check(Body.body(), Body.body()) :: Contact.contact_result()
   def check(
         Body.body(shape: Sphere.sphere(radius: r_a), position: p_a),
         Body.body(shape: Capsule.capsule(cap_radius: cr_b) = c, position: p_b, orientation: o_b)

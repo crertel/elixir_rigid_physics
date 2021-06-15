@@ -38,7 +38,7 @@ defmodule ElixirRigidPhysics.Geometry.Util do
     {0.0, 0.5, 0.0}
 
   """
-  @spec closest_point_on_line_to_point(Vec3.vec3, Vec3.vec3, Vec3.vec3) :: Vec3.vec3
+  @spec closest_point_on_line_to_point(Vec3.vec3(), Vec3.vec3(), Vec3.vec3()) :: Vec3.vec3()
   def closest_point_on_line_to_point(p, a, b) do
     v = Vec3.subtract(b, a)
     u = Vec3.subtract(a, p)

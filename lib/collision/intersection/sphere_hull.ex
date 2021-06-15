@@ -52,12 +52,11 @@ defmodule ElixirRigidPhysics.Collision.Intersection.SphereHull do
     iex> SphereHull.check(b1,b2)
     :wat
   """
-  @spec check(Body.body(), Body.body()) :: Contact.contact_result
+  @spec check(Body.body(), Body.body()) :: Contact.contact_result()
   def check(
         Body.body(shape: Sphere.sphere(radius: r_a) = sphere, position: p_a),
         Body.body(shape: Hull.hull(faces: faces) = hull, position: p_b, orientation: o_b)
       ) do
-
     # o_a = Quatern.identity()
 
     # o_b_inv = Quatern.conjugate(o_b)
@@ -80,5 +79,4 @@ defmodule ElixirRigidPhysics.Collision.Intersection.SphereHull do
   # def support(dir, sphere, _p_a, hull, _p_b, _o_b) do
   #   Vec3.subtract( Sphere.support_point(sphere, dir), Hull.support_point(hull, Vec3.scale(dir, -1.0)))
   # end
-
 end

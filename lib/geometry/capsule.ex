@@ -68,8 +68,8 @@ defmodule ElixirRigidPhysics.Geometry.Capsule do
     iex> Capsule.support_point(c, {1.0,-1.0,1.0})
     {0.0, -1.0, 0.0}
   """
-  @spec support_point(capsule, Vec3.vec3) :: Vec3.vec3
-  def support_point(capsule(axial_length: l), {_x,y,_z} = _direction) do
+  @spec support_point(capsule, Vec3.vec3()) :: Vec3.vec3()
+  def support_point(capsule(axial_length: l), {_x, y, _z} = _direction) do
     # technique borrowed from ReactPhysics3D
     # it weirds me out that the most extreme point is always a capsule end, but maybe that's okay?
 

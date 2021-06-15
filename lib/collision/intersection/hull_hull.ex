@@ -13,7 +13,7 @@ defmodule ElixirRigidPhysics.Collision.Intersection.HullHull do
   @doc """
   Tests intersections of two bodies.
   """
-  @spec check(Body.body(), Body.body()) :: Contact.contact_result
+  @spec check(Body.body(), Body.body()) :: Contact.contact_result()
   def check(
         Body.body(shape: Hull.hull(faces: faces_a), position: p_a, orientation: o_b),
         Body.body(shape: Hull.hull(faces: faces_b), position: p_b, orientation: o_b)

@@ -201,7 +201,7 @@ defmodule ElixirRigidPhysics.Collision.AABB do
   def create_local_from_shape(Hull.hull(faces: faces)) do
     {{minxp, minyp, minzp}, {maxxp, maxyp, maxzp}} =
       faces
-      |> Enum.flat_map( fn( a ) -> a end)
+      |> Enum.flat_map(fn a -> a end)
       |> Enum.reduce(
         {{@near_infinite, @near_infinite, @near_infinite},
          {-@near_infinite, -@near_infinite, -@near_infinite}},
@@ -213,10 +213,10 @@ defmodule ElixirRigidPhysics.Collision.AABB do
         end
       )
 
-      aabb(
-        min: {minxp, minyp, minzp},
-        max: {maxxp, maxyp, maxzp}
-      )
+    aabb(
+      min: {minxp, minyp, minzp},
+      max: {maxxp, maxyp, maxzp}
+    )
   end
 
   @doc """

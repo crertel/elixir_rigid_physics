@@ -10,43 +10,45 @@ defmodule ElixirRigidPhysics.Geometry.Hull do
 
   require Record
   Record.defrecord(:hull, faces: [], verts: [])
-  @type hull_face :: [Vec3.vec3]
-  @type hull :: record(:hull, faces: [hull_face], verts: [Vec3.vec3])
+  @type hull_face :: [Vec3.vec3()]
+  @type hull :: record(:hull, faces: [hull_face], verts: [Vec3.vec3()])
 
   @doc """
   Creates a hull geometry in the shape of a box.
   """
-  @spec create_box( number, number, number) :: hull
+  @spec create_box(number, number, number) :: hull
   def create_box(w, h, d) do
+    hw = w / 2.0
+    hh = h / 2.0
+    hd = d / 2.0
 
-    hw = w/2.0
-    hh = h/2.0
-    hd = d/2.0
+    top = [{hw, hh, hd}, {hw, hh, -hd}, {-hw, hh, -hd}, {-hw, hh, hd}]
+    bottom = [{hw, -hh, hd}, {-hw, -hh, hd}, {-hw, -hh, -hd}, {hw, -hh, -hd}]
+    front = [{hw, hh, hd}, {-hw, hh, hd}, {-hw, -hh, hd}, {hw, -hh, hd}]
+    back = [{hw, hh, -hd}, {hw, -hh, -hd}, {-hw, -hh, -hd}, {-hw, hh, -hd}]
+    left = [{-hw, hh, hd}, {-hw, hh, -hd}, {-hw, -hh, -hd}, {-hw, -hh, hd}]
+    right = [{hw, hh, hd}, {hw, -hh, hd}, {hw, -hh, -hd}, {hw, hh, -hd}]
 
-    top = [{hw,hh,hd}, {hw,hh,-hd}, {-hw,hh,-hd}, {-hw,hh,hd}]
-    bottom = [{hw,-hh,hd}, {-hw,-hh,hd}, {-hw,-hh,-hd}, {hw,-hh,-hd} ]
-    front = [{hw,hh,hd}, {-hw,hh,hd}, {-hw,-hh,hd}, {hw,-hh,hd}]
-    back = [{hw,hh,-hd}, {hw,-hh,-hd}, {-hw,-hh,-hd}, {-hw,hh,-hd}]
-    left = [{-hw,hh,hd}, {-hw,hh,-hd}, {-hw,-hh,-hd}, {-hw,-hh,hd}]
-    right = [{hw,hh,hd}, {hw,-hh,hd}, {hw,-hh,-hd}, {hw,hh,-hd} ]
-
-    hull(faces: [
-      top,
-      bottom,
-      front,
-      back,
-      left,
-      right
-    ], verts: [
-      {hw,hh,hd},
-      {hw,-hh,hd},
-      {-hw,hh,hd},
-      {-hw,-hh,hd},
-      {hw,hh,-hd},
-      {hw,-hh,-hd},
-      {-hw,hh,-hd},
-      {-hw,-hh,-hd}
-    ])
+    hull(
+      faces: [
+        top,
+        bottom,
+        front,
+        back,
+        left,
+        right
+      ],
+      verts: [
+        {hw, hh, hd},
+        {hw, -hh, hd},
+        {-hw, hh, hd},
+        {-hw, -hh, hd},
+        {hw, hh, -hd},
+        {hw, -hh, -hd},
+        {-hw, hh, -hd},
+        {-hw, -hh, -hd}
+      ]
+    )
   end
 
   @near_infinite 1.0e280
@@ -67,16 +69,23 @@ defmodule ElixirRigidPhysics.Geometry.Hull do
     iex> Hull.support_point(hull, {-0.15,-0.15,-0.25})
     {-1.0,-1.0,-1.0}
   """
-  @spec support_point(hull, Vec3.vec3) :: Vec3.vec3
+  @spec support_point(hull, Vec3.vec3()) :: Vec3.vec3()
   def support_point(hull(verts: verts), direction) do
-    {_max_dot_product, best_vert} = Enum.reduce(verts, {-@near_infinite, {-@near_infinite,-@near_infinite,-@near_infinite}}, fn(vert, {best_dot, _best_guess} = acc) ->
-      dot = Vec3.dot(direction, vert)
-      if dot > best_dot do
-        {dot, vert}
-      else
-        acc
-      end
-    end)
+    {_max_dot_product, best_vert} =
+      Enum.reduce(
+        verts,
+        {-@near_infinite, {-@near_infinite, -@near_infinite, -@near_infinite}},
+        fn vert, {best_dot, _best_guess} = acc ->
+          dot = Vec3.dot(direction, vert)
+
+          if dot > best_dot do
+            {dot, vert}
+          else
+            acc
+          end
+        end
+      )
+
     best_vert
   end
 end

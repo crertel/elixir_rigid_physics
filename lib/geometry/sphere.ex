@@ -38,7 +38,7 @@ defmodule ElixirRigidPhysics.Geometry.Sphere do
     iex> Sphere.support_point(s, {1.0,0.0,0.0})
     {2.0, 0.0, 0.0}
   """
-  @spec support_point(sphere, Vec3.vec3) :: Vec3.vec3
+  @spec support_point(sphere, Vec3.vec3()) :: Vec3.vec3()
   def support_point(sphere(radius: r), direction) do
     Vec3.scale(direction, r)
   end
