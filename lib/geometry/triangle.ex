@@ -84,7 +84,9 @@ defmodule ElixirRigidPhysics.Geometry.Triangle do
   def to_plane(triangle(a: a, b: b, c: c)) do
     ab = Vec3.subtract(b, a)
     ac = Vec3.subtract(c, a)
-    n = Vec3.cross(ab, ac) |> Vec3.normalize()
+    n = ab
+        |> Vec3.cross(ac)
+        |> Vec3.normalize()
     Plane.create(n, a)
   end
 
@@ -121,7 +123,8 @@ defmodule ElixirRigidPhysics.Geometry.Triangle do
   """
   @spec from_barycentric(triangle, {number, number, number}) :: Vec3.vec3()
   def from_barycentric(triangle(a: a, b: b, c: c), {u, v, w}) do
-    Vec3.weighted_sum(u, a, v, b)
+    u
+    |> Vec3.weighted_sum(a, v, b)
     |> Vec3.add(Vec3.scale(c, w))
   end
 

@@ -201,7 +201,9 @@ defmodule ElixirRigidPhysics.Geometry.Util do
 
     p_nearest = Vec3.lerp(p0, p1, s)
     q_nearest = Vec3.lerp(q0, q1, t)
-    distance = Vec3.subtract(p_nearest, q_nearest) |> Vec3.length()
+    distance = p_nearest
+              |> Vec3.subtract(q_nearest)
+              |> Vec3.length()
 
     {distance, p_nearest, q_nearest}
   end

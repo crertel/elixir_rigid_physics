@@ -94,7 +94,8 @@ defmodule ElixirRigidPhysics.Geometry.Plane do
   def project_point_to_plane(plane(a: a, b: b, c: c, d: d) = _plane, {px, py, pz} = point) do
     distance = 1.0 * (a * px + b * py + c * pz + d)
 
-    Vec3.scale({a, b, c}, -distance)
+    {a, b, c}
+    |> Vec3.scale( -distance)
     |> Vec3.add(point)
   end
 
@@ -131,7 +132,8 @@ defmodule ElixirRigidPhysics.Geometry.Plane do
       point
     else
       # we're behind it, must project onto plane.
-      Vec3.scale({a, b, c}, -distance)
+      {a, b, c}
+      |> Vec3.scale(-distance)
       |> Vec3.add(point)
     end
   end

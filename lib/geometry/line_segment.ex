@@ -84,7 +84,9 @@ defmodule ElixirRigidPhysics.Geometry.LineSegment do
   """
   @spec project(line_segment, Vec3.vec3()) :: Vec3.vec3()
   def project(line_segment(a: a, b: b), q) do
-    dir = Vec3.subtract(b, a) |> Vec3.normalize()
+    dir = b
+          |> Vec3.subtract(a)
+          |> Vec3.normalize()
     Vec3.add(a, Vec3.scale(dir, Vec3.dot(q, dir)))
   end
 
