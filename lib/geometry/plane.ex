@@ -90,6 +90,7 @@ defmodule ElixirRigidPhysics.Geometry.Plane do
     iex> Plane.project_point_to_plane(p, {44.0,22.0, -43.0})
     {44.0, 22.0, 3.0}
   """
+  @spec project_point_to_plane(plane, Vec3.t()) :: Vec3.t()
   def project_point_to_plane(plane(a: a, b: b, c: c, d: d) = _plane, {px, py, pz} = point) do
     distance = 1.0 * (a * px + b * py + c * pz + d)
 
@@ -122,6 +123,7 @@ defmodule ElixirRigidPhysics.Geometry.Plane do
     iex> Plane.clip_point(p, point)
     {24.0, 4.0, 3.0}
   """
+  @spec clip_point(plane, Vec3.t()) :: Vec3.t()
   def clip_point(plane(a: a, b: b, c: c, d: d), {px, py, pz} = point) do
     distance = 1.0 * (a * px + b * py + c * pz + d)
 

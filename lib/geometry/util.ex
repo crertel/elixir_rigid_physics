@@ -117,6 +117,8 @@ defmodule ElixirRigidPhysics.Geometry.Util do
     true
 
   """
+  @spec nearest_points_for_segments({Vec3.t(), Vec3.t()}, {Vec3.t(), Vec3.t()}) ::
+          {float, Vec3.t(), Vec3.t()}
   def nearest_points_for_segments({p0, p1}, {q0, q1}) do
     p1_to_p0 = Vec3.subtract(p1, p0)
     q1_to_q0 = Vec3.subtract(q1, q0)
